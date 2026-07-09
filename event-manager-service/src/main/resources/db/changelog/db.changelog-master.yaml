@@ -1,3 +1,5 @@
 databaseChangeLog:
-  - includeAll:
-      path: db/changelog/changesets/
+  - include:
+      file: db/changelog/changesets/09-07-26-0001_starter-baseline.sql
+  - include:
+      file: db/changelog/changesets/09-07-26-0002_init-db.sql

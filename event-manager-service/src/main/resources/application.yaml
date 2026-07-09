@@ -27,4 +27,7 @@ logging:
 
 springdoc:
   swagger-ui:
-    path: /swagger-ui/index.html
+    enabled: true
+    url: /event-manager-openapi.yaml
+  api-docs:
+    enabled: true
