@@ -1,0 +1,3 @@
+rootProject.name = 'ne-yandex-afisha'
+
+include 'event-manager-service'

@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'git.xlamid'
+version = '0.0.1-SNAPSHOT'
+description = 'ne-yandex-afisha'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
