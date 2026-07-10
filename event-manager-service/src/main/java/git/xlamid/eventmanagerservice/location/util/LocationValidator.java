@@ -7,17 +7,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class LocationCheckerUtil {
+public class LocationValidator {
 
     private final LocationRepository locationRepository;
 
-    public void checkRepeatableName(String name) {
+    public void validateRepeatableName(String name) {
         if (locationRepository.existsByName(name)) {
             throwDuplicateNameException(name);
         }
     }
 
-    public void checkRepeatableName(Long id, String name) {
+    public void validateRepeatableName(Long id, String name) {
         if (locationRepository.existsByNameAndIdNot(name, id)) {
             throwDuplicateNameException(name);
         }

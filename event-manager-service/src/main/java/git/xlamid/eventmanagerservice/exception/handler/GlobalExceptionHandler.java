@@ -1,6 +1,6 @@
 package git.xlamid.eventmanagerservice.exception.handler;
 
-import git.xlamid.eventmanagerservice.exception.dto.ResponseExceptionDto;
+import git.xlamid.eventmanagerservice.exception.dto.ExceptionMessageResponseDto;
 import git.xlamid.eventmanagerservice.exception.model.notfound.NotFoundException;
 import git.xlamid.eventmanagerservice.exception.model.validation.RepeatableValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ResponseExceptionDto> handleNotFoundException(NotFoundException e) {
+    public ResponseEntity<ExceptionMessageResponseDto> handleNotFoundException(NotFoundException e) {
         log.error("Not found exception", e);
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ResponseExceptionDto(
+                .body(new ExceptionMessageResponseDto(
                         "Not found exception",
                         e.getMessage(),
                         OffsetDateTime.now()
@@ -31,11 +31,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseExceptionDto> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ExceptionMessageResponseDto> handleValidationException(MethodArgumentNotValidException e) {
         log.error("Validation exception", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseExceptionDto(
+                .body(new ExceptionMessageResponseDto(
                         "Validation exception",
                         getReadableMessage(e),
                         OffsetDateTime.now()
@@ -51,11 +51,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RepeatableValidationException.class)
-    public ResponseEntity<ResponseExceptionDto> handleBadRequestException(RepeatableValidationException e) {
+    public ResponseEntity<ExceptionMessageResponseDto> handleBadRequestException(RepeatableValidationException e) {
         log.error("Repeatable validation exception", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseExceptionDto(
+                .body(new ExceptionMessageResponseDto(
                         "Repeatable validation exception",
                         e.getMessage(),
                         OffsetDateTime.now()
@@ -63,13 +63,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(exception = {MethodArgumentTypeMismatchException.class})
-    public ResponseEntity<ResponseExceptionDto> handleBadRequestException(
+    public ResponseEntity<ExceptionMessageResponseDto> handleBadRequestException(
             MethodArgumentTypeMismatchException e
     ) {
         log.error("Bad request exception", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ResponseExceptionDto(
+                .body(new ExceptionMessageResponseDto(
                         "Bad request exception",
                         e.getMessage(),
                         OffsetDateTime.now()
@@ -77,11 +77,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseExceptionDto> handleException(Exception e) {
+    public ResponseEntity<ExceptionMessageResponseDto> handleException(Exception e) {
         log.error("Server exception", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseExceptionDto(
+                .body(new ExceptionMessageResponseDto(
                         "Server exception",
                         e.getMessage(),
                         OffsetDateTime.now()

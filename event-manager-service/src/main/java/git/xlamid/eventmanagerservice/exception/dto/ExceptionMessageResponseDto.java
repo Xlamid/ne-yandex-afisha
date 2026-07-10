@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseExceptionDto {
+public class ExceptionMessageResponseDto {
 
     private String message;
     private String detailedMessage;

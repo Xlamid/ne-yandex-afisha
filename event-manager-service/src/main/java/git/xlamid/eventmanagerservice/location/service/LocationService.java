@@ -7,7 +7,7 @@ import git.xlamid.eventmanagerservice.location.dto.UpdateLocationDto;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import git.xlamid.eventmanagerservice.location.mapper.LocationMapper;
 import git.xlamid.eventmanagerservice.location.repository.LocationRepository;
-import git.xlamid.eventmanagerservice.location.util.LocationCheckerUtil;
+import git.xlamid.eventmanagerservice.location.util.LocationValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +20,11 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
     private final LocationMapper locationMapper;
-    private final LocationCheckerUtil locationCheckerUtil;
+    private final LocationValidator locationValidator;
 
     @Transactional
     public GetLocationDto createLocation(CreateLocationDto locationDto) {
-        locationCheckerUtil.checkRepeatableName(locationDto.getName());
+        locationValidator.validateRepeatableName(locationDto.getName());
         LocationEntity locationEntity = locationMapper.dtoToEntity(locationDto);
         return locationMapper.entityToGetDto(
                 locationRepository.save(locationEntity)
@@ -47,7 +47,7 @@ public class LocationService {
     @Transactional
     public GetLocationDto updateLocation(Long id, UpdateLocationDto locationDto) {
         LocationEntity locationEntity = findLocationById(id);
-        locationCheckerUtil.checkRepeatableName(id, locationDto.getName());
+        locationValidator.validateRepeatableName(id, locationDto.getName());
         locationMapper.updateEntityByDto(locationEntity, locationDto);
         return locationMapper.entityToGetDto(
                 locationRepository.save(locationEntity)
