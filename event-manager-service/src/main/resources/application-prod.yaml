@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  lifetime: 86_400_000

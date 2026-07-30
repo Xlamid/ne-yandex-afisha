@@ -22,10 +22,7 @@ public class LocationEntity {
     @Column(name = "address", nullable = false, length = 1000)
     private String address;
 
-    @Column(
-            name = "capacity",
-            nullable = false
-    )
+    @Column(name = "capacity", nullable = false)
     private Integer capacity;
 
     @Column(name = "description")

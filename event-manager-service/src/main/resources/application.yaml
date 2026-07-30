@@ -4,11 +4,8 @@ server:
 spring:
   application:
     name: event-manager-service
-
-  datasource:
-    url: jdbc:postgresql://localhost:5434/event-manager-service
-    username: postgres
-    password: postgres
+  profiles:
+    active: dev
 
   jpa:
     hibernate:
