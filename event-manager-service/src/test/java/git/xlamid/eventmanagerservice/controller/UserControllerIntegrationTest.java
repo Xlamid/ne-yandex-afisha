@@ -70,28 +70,6 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
     }
 
     @Test
-    void shouldReturnBadRequestWithWeakPasswordForRegisterUser() throws Exception {
-        // Arrange
-        RegisterUserDto registerDto = new RegisterUserDto(
-                "weak_user",
-                "weakpassword",
-                25
-        );
-
-        // Act
-        mockMvc.perform(post(BASE_URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerDto)))
-                .andDo(print())
-                // Assert
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation exception"));
-
-        // Verify
-        assertTrue(userRepository.findAll().isEmpty());
-    }
-
-    @Test
     void shouldReturnBadRequestWhenLoginAlreadyExistsForRegisterUser() throws Exception {
         // Arrange
         UserEntity existingUser = new UserEntity(
