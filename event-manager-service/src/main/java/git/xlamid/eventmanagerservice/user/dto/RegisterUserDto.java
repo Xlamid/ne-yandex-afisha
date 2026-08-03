@@ -21,7 +21,6 @@ public class RegisterUserDto {
     @ToString.Exclude
     private String password;
 
-    @Min(6)
     @Max(150)
     @NotNull
     private Integer age;
