@@ -23,5 +23,5 @@ ALTER TABLE users
 
 -- changeset Xlamid:1785305312461-4
 ALTER TABLE users
-    ADD CONSTRAINT chk_age_range CHECK (age >= 6 AND age <= 150)
+    ADD CONSTRAINT chk_age_range CHECK (age >= 18 AND age <= 150)
 --rollback alter table users drop constraint chk_age_range;

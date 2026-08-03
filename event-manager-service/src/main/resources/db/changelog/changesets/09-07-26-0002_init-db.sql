@@ -23,5 +23,5 @@ ALTER TABLE locations
 
 -- changeset Xlamid:1783598790667-4
 ALTER TABLE locations
-    ADD CONSTRAINT chk_capacity_range CHECK (capacity >= 1 AND capacity <= 1000000);
+    ADD CONSTRAINT chk_capacity_range CHECK (capacity >= 5 AND capacity <= 1000000);
 --rollback alter table locations drop constraint if exists chk_capacity_range;
