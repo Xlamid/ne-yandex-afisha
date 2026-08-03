@@ -16,7 +16,7 @@ public class CreateLocationDto {
     @Size(min = 3, max = 1000)
     private String address;
 
-    @Min(1)
+    @Min(5)
     @Max(1000000)
     @NotNull
     private Integer capacity;
