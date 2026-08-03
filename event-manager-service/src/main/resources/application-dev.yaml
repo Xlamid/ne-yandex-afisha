@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/event-manager-service
+    username: postgres
+    password: postgres
+
+jwt:
+  secret-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
+  lifetime: 3_600_000
+
+default:
+  admin:
+    login: admin
+    password: password
