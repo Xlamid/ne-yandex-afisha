@@ -46,6 +46,18 @@ public class SecurityConfig {
                                 .requestMatchers("/locations/**")
                                     .hasAnyAuthority("ADMIN")
 
+                                // EventController
+                                .requestMatchers(HttpMethod.POST, "/events")
+                                    .hasAnyAuthority("USER")
+                                .requestMatchers(HttpMethod.GET, "/events/my")
+                                    .hasAnyAuthority("USER")
+                                .requestMatchers("/events/{eventId}", "/events/search")
+                                    .hasAnyAuthority("ADMIN", "USER")
+
+                                // RegistrationController
+                                .requestMatchers("/events/registrations/**")
+                                    .hasAnyAuthority("USER")
+
                                 .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception

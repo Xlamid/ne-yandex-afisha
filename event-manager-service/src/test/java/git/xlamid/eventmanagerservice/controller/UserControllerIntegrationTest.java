@@ -27,6 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerIntegrationTest extends AbstractWithContainerTest {
 
     private static final String BASE_URL = "/users";
+    private static final String ADMIN_LOGIN = "admin1";
+    private static final String USER_LOGIN = "user1";
 
     @Autowired
     private UserRepository userRepository;
@@ -34,13 +36,9 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @BeforeEach
-    public void clearDatabase() {
-        userRepository.deleteAll();
-    }
-
     @Test
     void shouldReturnCreatedAndSaveToDatabaseDtoForRegisterUser() throws Exception {
+        userRepository.deleteAll();
         // Arrange
         RegisterUserDto registerDto = new RegisterUserDto(
                 "new_user_test",
@@ -71,6 +69,7 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
 
     @Test
     void shouldReturnBadRequestWithWeakPasswordForRegisterUser() throws Exception {
+        userRepository.deleteAll();
         // Arrange
         RegisterUserDto registerDto = new RegisterUserDto(
                 "weak_user",
@@ -85,7 +84,7 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
                 .andDo(print())
                 // Assert
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation exception"));
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
 
         // Verify
         assertTrue(userRepository.findAll().isEmpty());
@@ -99,7 +98,9 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
                 "duplicate_login",
                 30,
                 "hash",
-                UserRole.USER.name()
+                UserRole.USER.name(),
+                null,
+                null
         );
         userRepository.save(existingUser);
 
@@ -126,7 +127,9 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
                 "auth_user",
                 30,
                 passwordEncoder.encode("ValidP@ssw0rd!1"),
-                UserRole.USER.name()
+                UserRole.USER.name(),
+                null,
+                null
         );
         userRepository.save(user);
 
@@ -151,7 +154,9 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
                 "auth_user",
                 30,
                 passwordEncoder.encode("ValidP@ssw0rd!1"),
-                UserRole.USER.name()
+                UserRole.USER.name(),
+                null,
+                null
         );
         userRepository.save(user);
 
@@ -167,7 +172,6 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnUserAsAdminForGetUserById() throws Exception {
         // Arrange
         UserEntity user = new UserEntity(
@@ -175,12 +179,15 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
                 "target_user",
                 22,
                 "hash",
-                UserRole.USER.name()
+                UserRole.USER.name(),
+                null,
+                null
         );
         UserEntity savedUser = userRepository.save(user);
 
         // Act
-        mockMvc.perform(get(BASE_URL + "/" + savedUser.getId()))
+        mockMvc.perform(get(BASE_URL + "/" + savedUser.getId())
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isOk())
@@ -190,7 +197,6 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
     }
 
     @Test
-    @WithMockUser(username = "simple_user", authorities = "USER")
     void shouldReturnForbiddenAsUserForGetUserById() throws Exception {
         // Arrange
         UserEntity user = new UserEntity(
@@ -198,24 +204,158 @@ public class UserControllerIntegrationTest extends AbstractWithContainerTest {
                 "target_user",
                 22,
                 "hash",
-                UserRole.USER.name()
+                UserRole.USER.name(),
+                null,
+                null
         );
         UserEntity savedUser = userRepository.save(user);
 
         // Act
-        mockMvc.perform(get(BASE_URL + "/" + savedUser.getId()))
+        mockMvc.perform(get(BASE_URL + "/" + savedUser.getId())
+                        .header("Authorization", getAuthHeader(USER_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnNotFoundWhenNotFoundForGetUserById() throws Exception {
         // Act
-        mockMvc.perform(get(BASE_URL + "/99999"))
+        mockMvc.perform(get(BASE_URL + "/99999")
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenLoginIsBlankForRegisterUser() throws Exception {
+        // Arrange
+        RegisterUserDto registerDto = new RegisterUserDto(
+                "   ",
+                "StrongP@ssw0rd!",
+                25
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenLoginIsTooShortForRegisterUser() throws Exception {
+        // Arrange
+        RegisterUserDto registerDto = new RegisterUserDto(
+                "ab",
+                "StrongP@ssw0rd!",
+                25
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAgeIsNullForRegisterUser() throws Exception {
+        // Arrange
+        RegisterUserDto registerDto = new RegisterUserDto(
+                "valid_login",
+                "StrongP@ssw0rd!",
+                null
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAgeIsTooYoungForRegisterUser() throws Exception {
+        // Arrange
+        RegisterUserDto registerDto = new RegisterUserDto(
+                "valid_login",
+                "StrongP@ssw0rd!",
+                17
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAgeIsTooOldForRegisterUser() throws Exception {
+        // Arrange
+        RegisterUserDto registerDto = new RegisterUserDto(
+                "valid_login",
+                "StrongP@ssw0rd!",
+                151
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenLoginIsBlankForAuthenticateUser() throws Exception {
+        // Arrange
+        AuthUserDto authDto = new AuthUserDto(
+                "   ",
+                "ValidP@ssw0rd!1"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL + "/auth")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(authDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenLoginIsTooShortForAuthenticateUser() throws Exception {
+        // Arrange
+        AuthUserDto authDto = new AuthUserDto(
+                "ab",
+                "ValidP@ssw0rd!1"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL + "/auth")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(authDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
     }
 }

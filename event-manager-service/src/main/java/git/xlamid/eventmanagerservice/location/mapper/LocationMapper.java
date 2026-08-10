@@ -4,8 +4,11 @@ import git.xlamid.eventmanagerservice.location.dto.CreateLocationDto;
 import git.xlamid.eventmanagerservice.location.dto.GetLocationDto;
 import git.xlamid.eventmanagerservice.location.dto.UpdateLocationDto;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+
+import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
 
 @Mapper(componentModel = "spring")
 public interface LocationMapper {
@@ -14,6 +17,7 @@ public interface LocationMapper {
 
     GetLocationDto entityToGetDto(LocationEntity save);
 
-    void updateEntityByDto(@MappingTarget LocationEntity locationEntity,
-                           UpdateLocationDto locationDto);
+    @BeanMapping(nullValuePropertyMappingStrategy = IGNORE)
+    void updateEntityByDto(@MappingTarget LocationEntity entity,
+                           UpdateLocationDto dto);
 }

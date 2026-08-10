@@ -5,10 +5,10 @@ import git.xlamid.eventmanagerservice.location.dto.CreateLocationDto;
 import git.xlamid.eventmanagerservice.location.dto.UpdateLocationDto;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import git.xlamid.eventmanagerservice.location.repository.LocationRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -23,12 +23,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LocationControllerIntegrationTest extends AbstractWithContainerTest {
 
     private static final String BASE_URL = "/locations";
+    private static final String ADMIN_LOGIN = "admin1";
+    private static final String USER_LOGIN = "user1";
 
     @Autowired
     private LocationRepository locationRepository;
 
+    @BeforeEach
+    public void setup() {
+        locationRepository.deleteAll();
+    }
+
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldCreateLocationAndReturnCreatedAndSavedDtoForCreateLocation() throws Exception {
         // Arrange
         CreateLocationDto createDto = new CreateLocationDto(
@@ -40,6 +46,7 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andDo(print())
@@ -58,7 +65,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnBadRequestWhenInvalidCapacityForCreateLocation() throws Exception {
         // Arrange
         CreateLocationDto createDto = new CreateLocationDto(
@@ -70,6 +76,7 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 // Assert
@@ -80,7 +87,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
     void shouldReturnListOfLocationsForGetLocations() throws Exception {
         // Arrange
         LocationEntity loc1 = new LocationEntity(
@@ -88,19 +94,22 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                 "Hall 1",
                 "Address 1",
                 100,
-                "Desc 1"
+                "Desc 1",
+                null
         );
         LocationEntity loc2 = new LocationEntity(
                 null,
                 "Hall 2",
                 "Address 2",
                 200,
-                "Desc 2"
+                "Desc 2",
+                null
         );
         locationRepository.saveAll(List.of(loc1, loc2));
 
         // Act
-        mockMvc.perform(get(BASE_URL))
+        mockMvc.perform(get(BASE_URL)
+                        .header("Authorization", getAuthHeader(USER_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isOk())
@@ -110,7 +119,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
     void shouldReturnLocationByIdWhenExistsForGetLocationById() throws Exception {
         // Arrange
         LocationEntity savedLocation = locationRepository.save(
@@ -119,12 +127,14 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                         "Hall 1",
                         "Address 1",
                         100,
-                        "Desc 1"
+                        "Desc 1",
+                        null
                 )
         );
 
         // Act
-        mockMvc.perform(get(BASE_URL + "/" + savedLocation.getId()))
+        mockMvc.perform(get(BASE_URL + "/" + savedLocation.getId())
+                        .header("Authorization", getAuthHeader(USER_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isOk())
@@ -133,17 +143,16 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
     void shouldReturnNotFoundByIdWhenNotExistsForGetLocationById() throws Exception {
         // Act
-        mockMvc.perform(get(BASE_URL + "/" + "999"))
+        mockMvc.perform(get(BASE_URL + "/" + "999")
+                        .header("Authorization", getAuthHeader(USER_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldUpdateAndReturnLocationForUpdateLocation() throws Exception {
         // Arrange
         LocationEntity savedLocation = locationRepository.save(
@@ -152,7 +161,8 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                         "Old Hall",
                         "Old Address",
                         100,
-                        "Old Desc"
+                        "Old Desc",
+                        null
                 )
         );
 
@@ -165,6 +175,7 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(put(BASE_URL + "/" + savedLocation.getId())
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
@@ -181,7 +192,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldRemoveFromDatabaseForDeleteLocation() throws Exception {
         // Arrange
         LocationEntity savedLocation = locationRepository.save(
@@ -190,12 +200,14 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                         "Hall to delete",
                         "Delete address",
                         50,
-                        "Desc"
+                        "Desc",
+                        null
                 )
         );
 
         // Act
-        mockMvc.perform(delete(BASE_URL + "/" + savedLocation.getId()))
+        mockMvc.perform(delete(BASE_URL + "/" + savedLocation.getId())
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isNoContent());
@@ -205,7 +217,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnBadRequestWhenNameAlreadyExistsOnCreateForCreateLocation() throws Exception {
         // Arrange
         LocationEntity existingLocation = new LocationEntity(
@@ -213,7 +224,8 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                 "Duplicate Name",
                 "Address 1",
                 100,
-                "Desc 1"
+                "Desc 1",
+                null
         );
         locationRepository.save(existingLocation);
 
@@ -226,19 +238,19 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Repeatable validation exception"))
+                .andExpect(jsonPath("$.message").value("Validation exception"))
                 .andExpect(jsonPath("$.detailedMessage")
                         .value("Location with name '" + createDto.getName() + "' already exists"))
                 .andExpect(jsonPath("$.dateTime").exists());
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnBadRequestWhenNameAlreadyExistsOnUpdateForUpdateLocation() throws Exception {
         // Arrange
         LocationEntity loc1 = locationRepository.save(new LocationEntity(
@@ -246,14 +258,16 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                 "Existing Name",
                 "Address 1",
                 100,
-                "Desc 1"
+                "Desc 1",
+                null
         ));
         LocationEntity loc2 = locationRepository.save(new LocationEntity(
                 null,
                 "Other Name",
                 "Address 2",
                 200,
-                "Desc 2"
+                "Desc 2",
+                null
         ));
 
         UpdateLocationDto updateDto = new UpdateLocationDto(
@@ -265,17 +279,17 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(put(BASE_URL + "/" + loc2.getId())
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message")
-                        .value("Repeatable validation exception"));
+                        .value("Validation exception"));
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnNotFoundWhenUpdatingNonExistentLocationForUpdateLocation() throws Exception {
         // Arrange
         UpdateLocationDto updateDto = new UpdateLocationDto(
@@ -287,6 +301,7 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(put(BASE_URL + "/" + "999999")
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
@@ -298,10 +313,10 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnNotFoundWhenDeletingNonExistentLocationForDeleteLocation() throws Exception {
         // Act
-        mockMvc.perform(delete(BASE_URL + "/" + "999999"))
+        mockMvc.perform(delete(BASE_URL + "/" + "999999")
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isNotFound())
@@ -309,7 +324,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void shouldReturnBadRequestWithMultipleValidationErrorsForCreateLocation() throws Exception {
         // Arrange
         CreateLocationDto createDto = new CreateLocationDto(
@@ -321,12 +335,13 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Validation exception"))
+                .andExpect(jsonPath("$.message").value("Not valid exception"))
                 .andExpect(jsonPath("$.detailedMessage").exists());
     }
 
@@ -340,7 +355,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
     void shouldReturnForbiddenWhenUserRoleTriesToCreateLocationForCreateLocation() throws Exception {
         // Arrange
         CreateLocationDto createDto = new CreateLocationDto(
@@ -352,6 +366,7 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
 
         // Act
         mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(USER_LOGIN))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andDo(print())
@@ -360,7 +375,6 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
     void shouldReturnForbiddenWhenUserRoleTriesToDeleteLocationForDeleteLocation() throws Exception {
         // Arrange
         LocationEntity savedLocation = locationRepository.save(
@@ -369,14 +383,142 @@ public class LocationControllerIntegrationTest extends AbstractWithContainerTest
                         "Hall to delete",
                         "Delete address",
                         50,
-                        "Desc"
+                        "Desc",
+                        null
                 )
         );
 
         // Act
-        mockMvc.perform(delete(BASE_URL + "/" + savedLocation.getId()))
+        mockMvc.perform(delete(BASE_URL + "/" + savedLocation.getId())
+                        .header("Authorization", getAuthHeader(USER_LOGIN)))
                 .andDo(print())
                 // Assert
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenNameIsTooShortForCreateLocation() throws Exception {
+        // Arrange
+        CreateLocationDto createDto = new CreateLocationDto(
+                "Hi",
+                "123 Main St, Springfield",
+                500,
+                "A large hall for conferences"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenNameIsBlankForCreateLocation() throws Exception {
+        // Arrange
+        CreateLocationDto createDto = new CreateLocationDto(
+                "   ",
+                "123 Main St, Springfield",
+                500,
+                "A large hall for conferences"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAddressIsTooShortForCreateLocation() throws Exception {
+        // Arrange
+        CreateLocationDto createDto = new CreateLocationDto(
+                "Conference Hall A",
+                "St",
+                500,
+                "A large hall for conferences"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAddressIsBlankForCreateLocation() throws Exception {
+        // Arrange
+        CreateLocationDto createDto = new CreateLocationDto(
+                "Conference Hall A",
+                "",
+                500,
+                "A large hall for conferences"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCapacityIsTooLargeForCreateLocation() throws Exception {
+        // Arrange
+        CreateLocationDto createDto = new CreateLocationDto(
+                "Conference Hall A",
+                "123 Main St, Springfield",
+                1000001,
+                "A large hall for conferences"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenCapacityIsNullForCreateLocation() throws Exception {
+        // Arrange
+        CreateLocationDto createDto = new CreateLocationDto(
+                "Conference Hall A",
+                "123 Main St, Springfield",
+                null,
+                "A large hall for conferences"
+        );
+
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .header("Authorization", getAuthHeader(ADMIN_LOGIN))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Not valid exception"));
     }
 }

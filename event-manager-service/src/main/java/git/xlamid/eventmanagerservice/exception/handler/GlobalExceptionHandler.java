@@ -3,11 +3,12 @@ package git.xlamid.eventmanagerservice.exception.handler;
 import git.xlamid.eventmanagerservice.exception.dto.ExceptionMessageResponseDto;
 import git.xlamid.eventmanagerservice.exception.model.exists.ExistsException;
 import git.xlamid.eventmanagerservice.exception.model.notfound.NotFoundException;
-import git.xlamid.eventmanagerservice.exception.model.validation.RepeatableValidationException;
+import git.xlamid.eventmanagerservice.exception.model.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,11 +32,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionMessageResponseDto> handleValidationException(MethodArgumentNotValidException e) {
-        log.error("Validation exception", e);
+    public ResponseEntity<ExceptionMessageResponseDto> handleNotValidException(MethodArgumentNotValidException e) {
+        log.error("Not valid exception", e);
         return createResponse(
                 HttpStatus.BAD_REQUEST,
-                "Validation exception",
+                "Not valid exception",
                 getReadableMessage(e)
         );
     }
@@ -48,18 +49,18 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
     }
 
-    @ExceptionHandler(RepeatableValidationException.class)
-    public ResponseEntity<ExceptionMessageResponseDto> handleBadRequestException(RepeatableValidationException e) {
-        log.error("Repeatable validation exception", e);
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ExceptionMessageResponseDto> handleNotValidException(ValidationException e) {
+        log.error("Validation exception", e);
         return createResponse(
                 HttpStatus.BAD_REQUEST,
-                "Repeatable validation exception",
+                "Validation exception",
                 e.getMessage()
         );
     }
 
     @ExceptionHandler(exception = {MethodArgumentTypeMismatchException.class})
-    public ResponseEntity<ExceptionMessageResponseDto> handleBadRequestException(
+    public ResponseEntity<ExceptionMessageResponseDto> handleNotValidException(
             MethodArgumentTypeMismatchException e
     ) {
         log.error("Bad request exception", e);
@@ -86,6 +87,16 @@ public class GlobalExceptionHandler {
         return createResponse(
                 HttpStatus.UNAUTHORIZED,
                 "Unauthorize exception",
+                e.getMessage()
+        );
+    }
+
+    @ExceptionHandler(exception = {AccessDeniedException.class})
+    public ResponseEntity<ExceptionMessageResponseDto> handleAccessDeniedException(AccessDeniedException e) {
+        log.error("Access denied exception", e);
+        return createResponse(
+                HttpStatus.FORBIDDEN,
+                "Access denied exception",
                 e.getMessage()
         );
     }

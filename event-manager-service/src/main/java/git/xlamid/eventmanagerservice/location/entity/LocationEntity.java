@@ -1,7 +1,10 @@
 package git.xlamid.eventmanagerservice.location.entity;
 
+import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,4 +30,7 @@ public class LocationEntity {
 
     @Column(name = "description")
     private String description;
+
+    @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
+    private List<EventEntity> events;
 }

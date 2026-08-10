@@ -50,11 +50,13 @@ public class UserService {
                 dto.getLogin(),
                 dto.getAge(),
                 dto.getPassword(),
-                UserRole.USER.name()
+                UserRole.USER.name(),
+                null,
+                null
         );
     }
 
-    private UserEntity findUserById(Long id) {
+    public UserEntity findUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found"));
     }

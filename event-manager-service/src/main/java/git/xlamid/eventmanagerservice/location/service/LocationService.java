@@ -60,7 +60,7 @@ public class LocationService {
         );
     }
 
-    private LocationEntity findLocationById(Long id) {
+    public LocationEntity findLocationById(Long id) {
         return locationRepository.findById(id)
                 .orElseThrow(() -> new LocationNotFoundException("Location with id " + id + " not found"));
     }
