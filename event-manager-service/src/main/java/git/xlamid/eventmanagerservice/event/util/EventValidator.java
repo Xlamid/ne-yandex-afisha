@@ -8,6 +8,7 @@ import git.xlamid.eventmanagerservice.exception.model.validation.TooManyValidati
 import git.xlamid.eventmanagerservice.exception.model.validation.UnavailableValidationException;
 import git.xlamid.eventmanagerservice.registration.entity.RegistrationEntity;
 import git.xlamid.eventmanagerservice.registration.repository.RegistrationRepository;
+import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.user.model.enums.UserModel;
 import git.xlamid.eventmanagerservice.user.model.enums.UserRole;
 import git.xlamid.eventmanagerservice.user.service.UserSecurityContextService;
@@ -69,9 +70,9 @@ public class EventValidator {
         });
     }
 
-    public void validateAccess(Long eventId) {
+    public void validateAccess(UserEntity owner) {
         UserModel userModel = userContextService.getUserFromSecurityContext();
-        boolean isUserOwner = eventId.equals(userModel.getId());
+        boolean isUserOwner = owner.getId().equals(userModel.getId());
         if (userModel.getRole().equals(UserRole.USER) && !isUserOwner) {
             throw new AccessDeniedException("No access rights to modify the event");
         }

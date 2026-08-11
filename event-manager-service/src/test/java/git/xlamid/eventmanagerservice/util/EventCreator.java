@@ -13,13 +13,14 @@ import java.util.ArrayList;
 public class EventCreator {
 
     public EventEntity createEventEntity(String name,
-                                          UserEntity owner,
-                                          EventStatus status,
-                                          LocationEntity location) {
+                                         UserEntity owner,
+                                         EventStatus status,
+                                         LocationEntity location) {
         return createCustomEventEntity(
                 name,
-                100,
                 OffsetDateTime.now().plusDays(5),
+                100,
+                60,
                 status,
                 owner,
                 location
@@ -27,17 +28,18 @@ public class EventCreator {
     }
 
     public EventEntity createCustomEventEntity(String name,
-                                                int cost,
-                                                OffsetDateTime date,
-                                                EventStatus status,
-                                                UserEntity owner,
-                                                LocationEntity location) {
+                                               OffsetDateTime date,
+                                               int cost,
+                                               int duration,
+                                               EventStatus status,
+                                               UserEntity owner,
+                                               LocationEntity location) {
         return new EventEntity(
                 null,
                 name,
                 date,
                 cost,
-                60,
+                duration,
                 50,
                 0,
                 status.name(),

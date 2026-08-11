@@ -155,6 +155,51 @@ public class RegistrationControllerIntegrationTest extends AbstractWithContainer
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void shouldIncrementOccupiedPlacesWhenSuccessfulForRegistrationUserOnEventByEventId() throws Exception {
+        // Arrange
+        EventEntity event = eventCreator.createEventEntity(
+                "Increment Event",
+                testUser,
+                EventStatus.WAIT_START,
+                testLocation
+        );
+        event.setOccupiedPlaces(5);
+        EventEntity savedEvent = eventRepository.save(event);
+
+        // Act
+        mockMvc.perform(post(BASE_URL + "/" + savedEvent.getId())
+                        .header("Authorization", getAuthHeader(testUser.getLogin())))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isOk());
+
+        // Verify
+        EventEntity updatedEvent = eventRepository.findById(savedEvent.getId()).orElseThrow();
+        assertEquals(6, updatedEvent.getOccupiedPlaces());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenMaxPlacesExceededForRegistrationUserOnEventByEventId() throws Exception {
+        // Arrange
+        EventEntity event = eventCreator.createEventEntity(
+                "Full Event",
+                testUser,
+                EventStatus.WAIT_START,
+                testLocation
+        );
+        event.setMaxPlaces(5);
+        event.setOccupiedPlaces(6);
+        EventEntity savedEvent = eventRepository.save(event);
+
+        // Act
+        mockMvc.perform(post(BASE_URL + "/" + savedEvent.getId())
+                        .header("Authorization", getAuthHeader(testUser.getLogin())))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest());
+    }
+
     // getEventsForUser()
 
     @Test
@@ -215,6 +260,61 @@ public class RegistrationControllerIntegrationTest extends AbstractWithContainer
         // Verify
         RegistrationEntity updatedReg = registrationRepository.findById(registration.getId()).orElseThrow();
         assertTrue(updatedReg.isCanceled());
+    }
+
+    @Test
+    void shouldDecrementOccupiedPlacesWhenSuccessfulForCancelRegistrationForUserByEventId() throws Exception {
+        // Arrange
+        EventEntity event = eventCreator.createEventEntity(
+                "Decrement Event",
+                testUser,
+                EventStatus.WAIT_START,
+                testLocation
+        );
+        event.setOccupiedPlaces(5);
+        EventEntity savedEvent = eventRepository.save(event);
+
+        RegistrationEntity registration = registrationRepository.save(
+                new RegistrationEntity(null, OffsetDateTime.now(), false, testUser, savedEvent)
+        );
+
+        // Act
+        mockMvc.perform(delete(BASE_URL + "/cancel/" + savedEvent.getId())
+                        .header("Authorization", getAuthHeader(testUser.getLogin())))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isNoContent());
+
+        // Verify
+        EventEntity updatedEvent = eventRepository.findById(savedEvent.getId()).orElseThrow();
+        assertEquals(4, updatedEvent.getOccupiedPlaces());
+
+        RegistrationEntity updatedReg = registrationRepository
+                .findById(registration.getId()).orElseThrow();
+        assertTrue(updatedReg.isCanceled());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenAlreadyCanceledForCancelRegistrationForUserByEventId() throws Exception {
+        // Arrange
+        EventEntity event = eventCreator.createEventEntity(
+                "Already Canceled Event",
+                testUser,
+                EventStatus.WAIT_START,
+                testLocation
+        );
+        event.setOccupiedPlaces(5);
+        EventEntity savedEvent = eventRepository.save(event);
+        registrationRepository.save(
+                new RegistrationEntity(null, OffsetDateTime.now(), true, testUser, savedEvent)
+        );
+
+        // Act
+        mockMvc.perform(delete(BASE_URL + "/cancel/" + savedEvent.getId())
+                        .header("Authorization", getAuthHeader(testUser.getLogin())))
+                .andDo(print())
+                // Assert
+                .andExpect(status().isBadRequest());
     }
 
     @Test

@@ -45,6 +45,10 @@ public class RegistrationService {
 
         eventValidator.validateRegistrationExists(userEntity.getId(), eventId);
         eventValidator.validateEventForAvailable(eventId, eventEntity.getStatus());
+        eventValidator.validateMaxPlacesForOccupiedPlaces
+                (eventEntity.getMaxPlaces(), eventEntity.getOccupiedPlaces());
+
+        eventEntity.setOccupiedPlaces(eventEntity.getOccupiedPlaces() + 1);
         registrationRepository.save(new RegistrationEntity(
                 null,
                 OffsetDateTime.now(),
@@ -56,7 +60,7 @@ public class RegistrationService {
 
     public List<GetEventDto> getEventsForUser() {
         Long userId = userContextService.getUserIdFromSecurityContext();
-        return eventRepository.findAllByUserId(userId).stream()
+        return eventRepository.findAllByOwnerId(userId).stream()
                 .map(eventMapper::entityToGetDto)
                 .toList();
     }
@@ -70,6 +74,8 @@ public class RegistrationService {
         Long userId = userContextService.getUserIdFromSecurityContext();
         RegistrationEntity regEntity = findRegistrationByUserIdAndEventId(userId, eventId);
         eventValidator.validateRegistrationAlreadyCanceled(regEntity.getId(), regEntity.isCanceled());
+        eventEntity.setOccupiedPlaces(eventEntity.getOccupiedPlaces() - 1);
+        regEntity.setEvent(eventEntity);
         regEntity.setCanceled(true);
         registrationRepository.save(regEntity);
     }

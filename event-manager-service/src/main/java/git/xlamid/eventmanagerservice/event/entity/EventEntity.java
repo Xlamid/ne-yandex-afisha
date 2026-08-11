@@ -42,7 +42,7 @@ public class EventEntity {
     private Integer maxPlaces;
 
     @Column(name = "occupied_places")
-    private Integer occupiedPlaces;
+    private Integer occupiedPlaces = 0;
 
     @Column(name = "status", nullable = false)
     private String status;
@@ -53,7 +53,7 @@ public class EventEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserEntity user;
+    private UserEntity owner;
 
     @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
     private List<RegistrationEntity> registrations = new ArrayList<>();

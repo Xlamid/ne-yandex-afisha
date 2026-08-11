@@ -14,7 +14,7 @@ public interface EventMapper {
     EventEntity dtoToEntity(CreateEventDto dto);
 
     @Mapping(source = "location.id", target = "locationId")
-    @Mapping(source = "user.id", target = "ownerId")
+    @Mapping(source = "owner.id", target = "ownerId")
     GetEventDto entityToGetDto(EventEntity save);
 
     @BeanMapping(nullValuePropertyMappingStrategy = IGNORE)

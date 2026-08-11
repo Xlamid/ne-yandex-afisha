@@ -6,6 +6,7 @@ import git.xlamid.eventmanagerservice.event.dto.EventSearchRequestDto;
 import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import git.xlamid.eventmanagerservice.event.repository.EventRepository;
+import git.xlamid.eventmanagerservice.event.service.EventService;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.util.DataTestUtil;
@@ -20,8 +21,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import static git.xlamid.eventmanagerservice.event.model.enums.EventStatus.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,6 +34,8 @@ public class EventControllerIntegrationTest extends AbstractWithContainerTest {
 
     @Autowired
     private EventRepository eventRepository;
+    @Autowired
+    private EventService eventService;
     @Autowired
     private DataTestUtil dataTestUtil;
     @Autowired
@@ -248,24 +250,27 @@ public class EventControllerIntegrationTest extends AbstractWithContainerTest {
         // Arrange
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Cheap Event",
-                50,
                 OffsetDateTime.now().plusDays(5),
+                50,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
         ));
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Target Event",
-                300,
                 OffsetDateTime.now().plusDays(5),
+                300,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
         ));
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Expensive Event",
-                1000,
                 OffsetDateTime.now().plusDays(5),
+                1000,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
@@ -293,24 +298,27 @@ public class EventControllerIntegrationTest extends AbstractWithContainerTest {
         OffsetDateTime now = OffsetDateTime.now();
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Past Event",
-                100,
                 now.minusDays(2),
+                100,
+                60,
                 FINISHED,
                 testAdmin,
                 testLocation
         ));
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Future Wait Event",
-                100,
                 now.plusDays(10),
+                100,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
         ));
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Future Started Event",
-                100,
                 now.plusDays(5),
+                100,
+                60,
                 STARTED,
                 testAdmin,
                 testLocation
@@ -339,24 +347,27 @@ public class EventControllerIntegrationTest extends AbstractWithContainerTest {
         OffsetDateTime date2 = OffsetDateTime.now().plusDays(10);
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "A Event",
-                100,
                 date1,
+                100,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
         ));
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "Z Event",
-                100,
                 date2,
+                100,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
         ));
         eventRepository.save(eventCreator.createCustomEventEntity(
                 "B Event",
-                100,
                 date1,
+                100,
+                60,
                 WAIT_START,
                 testAdmin,
                 testLocation
@@ -724,5 +735,192 @@ public class EventControllerIntegrationTest extends AbstractWithContainerTest {
                 .andDo(print())
                 // Assert
                 .andExpect(status().isBadRequest());
+    }
+
+    // updateEvents()
+
+    @Test
+    void shouldUpdateStatusToStartedWhenTimeHasComeForUpdateEvents() {
+        // Arrange
+        OffsetDateTime now = OffsetDateTime.now();
+        EventEntity futureEvent = eventCreator.createCustomEventEntity(
+                "Future Event",
+                now.plusHours(1),
+                1000,
+                60,
+                WAIT_START,
+                testUser1,
+                testLocation
+        );
+        EventEntity readyToStartEvent = eventCreator.createCustomEventEntity(
+                "Ready Event",
+                now.minusMinutes(10),
+                1000,
+                60,
+                WAIT_START,
+                testUser1,
+                testLocation
+        );
+        eventRepository.save(futureEvent);
+        eventRepository.save(readyToStartEvent);
+
+        // Act
+        eventService.updateEvents();
+
+        // Assert
+        EventEntity updatedFutureEvent = eventRepository.findById(futureEvent.getId()).orElseThrow();
+        EventEntity updatedReadyEvent = eventRepository.findById(readyToStartEvent.getId()).orElseThrow();
+
+        assertEquals(WAIT_START.name(), updatedFutureEvent.getStatus());
+        assertEquals(STARTED.name(), updatedReadyEvent.getStatus());
+    }
+
+    @Test
+    void shouldUpdateStatusToFinishedWhenTimeHasPassedForUpdateEvents() {
+        // Arrange
+        OffsetDateTime now = OffsetDateTime.now();
+        EventEntity runningEvent = eventCreator.createCustomEventEntity(
+                "Running Event",
+                now.minusMinutes(30),
+                1000,
+                60,
+                STARTED,
+                testUser1,
+                testLocation
+        );
+        EventEntity finishedEvent = eventCreator.createCustomEventEntity(
+                "Finished Event",
+                now.minusMinutes(120),
+                1000,
+                60,
+                STARTED,
+                testUser1,
+                testLocation
+        );
+        eventRepository.save(runningEvent);
+        eventRepository.save(finishedEvent);
+
+        // Act
+        eventService.updateEvents();
+
+        // Assert
+        EventEntity updatedRunningEvent = eventRepository.findById(runningEvent.getId()).orElseThrow();
+        EventEntity updatedFinishedEvent = eventRepository.findById(finishedEvent.getId()).orElseThrow();
+
+        assertEquals(STARTED.name(), updatedRunningEvent.getStatus());
+        assertEquals(FINISHED.name(), updatedFinishedEvent.getStatus());
+    }
+
+    @Test
+    void shouldProcessFullLifecycleCorrectlyForUpdateEvents() {
+        // Arrange
+        OffsetDateTime now = OffsetDateTime.now();
+        EventEntity future = eventCreator.createCustomEventEntity(
+                "Future",
+                now.plusHours(2),
+                1000,
+                60,
+                WAIT_START,
+                testUser1,
+                testLocation
+        );
+        EventEntity justStarted = eventCreator.createCustomEventEntity(
+                "Started",
+                now.minusMinutes(5),
+                61000,
+                60,
+                WAIT_START,
+                testUser1,
+                testLocation
+        );
+        EventEntity justFinished = eventCreator.createCustomEventEntity(
+                "Finished",
+                now.minusMinutes(90),
+                1000,
+                60,
+                STARTED,
+                testUser1,
+                testLocation
+        );
+        eventRepository.save(future);
+        eventRepository.save(justStarted);
+        eventRepository.save(justFinished);
+
+        // Act
+        eventService.updateEvents();
+
+        // Assert
+        assertEquals(WAIT_START.name(), eventRepository.findById(future.getId()).orElseThrow().getStatus());
+        assertEquals(STARTED.name(), eventRepository.findById(justStarted.getId()).orElseThrow().getStatus());
+        assertEquals(FINISHED.name(), eventRepository.findById(justFinished.getId()).orElseThrow().getStatus());
+    }
+
+
+
+
+    @Test
+    void shouldNotChangeStatusWhenNoEventsMeetCriteriaForUpdateEvents() {
+        // Arrange
+        OffsetDateTime now = OffsetDateTime.now();
+        EventEntity farFutureEvent = eventCreator.createCustomEventEntity(
+                "Far Future",
+                now.plusDays(1),
+                1000,
+                60,
+                WAIT_START,
+                testUser1,
+                testLocation
+        );
+        EventEntity ongoingEvent = eventCreator.createCustomEventEntity(
+                "Ongoing",
+                now.minusMinutes(10),
+                1000,
+                60,
+                STARTED,
+                testUser1,
+                testLocation
+        );
+        EventEntity cancelledEvent = eventCreator.createCustomEventEntity(
+                "Cancelled",
+                now.minusMinutes(100),
+                1000,
+                60,
+                CANCELLED,
+                testUser1,
+                testLocation
+        );
+        EventEntity alreadyFinishedEvent = eventCreator.createCustomEventEntity(
+                "Already Finished",
+                now.minusMinutes(200),
+                1000,
+                60,
+                FINISHED,
+                testUser1,
+                testLocation
+        );
+        eventRepository.save(farFutureEvent);
+        eventRepository.save(ongoingEvent);
+        eventRepository.save(cancelledEvent);
+        eventRepository.save(alreadyFinishedEvent);
+
+        // Act
+        eventService.updateEvents();
+
+        // Assert
+        assertEquals(WAIT_START.name(), eventRepository.findById(farFutureEvent.getId()).orElseThrow().getStatus());
+        assertEquals(STARTED.name(), eventRepository.findById(ongoingEvent.getId()).orElseThrow().getStatus());
+        assertEquals(CANCELLED.name(), eventRepository.findById(cancelledEvent.getId()).orElseThrow().getStatus());
+        assertEquals(FINISHED.name(), eventRepository.findById(alreadyFinishedEvent.getId()).orElseThrow().getStatus());
+    }
+
+    @Test
+    void shouldExecuteWithoutErrorsWhenDatabaseIsEmptyForUpdateEvents() {
+        // Arrange
+        long initialCount = eventRepository.count();
+        assertEquals(0, initialCount);
+
+        // Act & Assert
+        assertDoesNotThrow(() -> eventService.updateEvents());
+        assertEquals(0, eventRepository.count());
     }
 }

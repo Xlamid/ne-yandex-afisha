@@ -7,12 +7,14 @@ import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/events")
@@ -22,6 +24,7 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<GetEventDto> createEvent(@Valid @RequestBody CreateEventDto dto) {
+        log.info("Create event {}", dto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(eventService.createEvent(dto));
@@ -29,6 +32,7 @@ public class EventController {
 
     @PostMapping("/search")
     public ResponseEntity<List<GetEventDto>> searchEventsByFilters(@Valid @RequestBody EventSearchRequestDto dto) {
+        log.info("Search events by filters {}", dto);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.searchEventsByFilters(dto));
@@ -36,6 +40,7 @@ public class EventController {
 
     @GetMapping("/my")
     public ResponseEntity<List<GetEventDto>> getEventsForUser() {
+        log.info("Get events for user");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.getEventsForUser());
@@ -43,6 +48,7 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     public ResponseEntity<GetEventDto> getEventById(@PathVariable Long eventId) {
+        log.info("Get event by id {}", eventId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.getEventById(eventId));
@@ -51,6 +57,7 @@ public class EventController {
     @PutMapping("/{eventId}")
     public ResponseEntity<GetEventDto> updateEventById(@PathVariable Long eventId,
                                                        @Valid @RequestBody UpdateEventDto dto) {
+        log.info("Update event by id {}", eventId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(eventService.updateEventById(eventId, dto));
@@ -58,6 +65,7 @@ public class EventController {
 
     @DeleteMapping("/{eventId}")
     public ResponseEntity<GetEventDto> deleteEventById(@PathVariable Long eventId) {
+        log.info("Delete event by id {}", eventId);
         eventService.deleteEventById(eventId);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)

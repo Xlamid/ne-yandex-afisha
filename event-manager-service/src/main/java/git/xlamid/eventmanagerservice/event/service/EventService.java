@@ -6,7 +6,6 @@ import git.xlamid.eventmanagerservice.event.dto.GetEventDto;
 import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import git.xlamid.eventmanagerservice.event.mapper.EventMapper;
-import git.xlamid.eventmanagerservice.event.model.enums.EventStatus;
 import git.xlamid.eventmanagerservice.event.repository.EventRepository;
 import git.xlamid.eventmanagerservice.event.util.EventFinder;
 import git.xlamid.eventmanagerservice.event.util.EventSorter;
@@ -19,16 +18,22 @@ import git.xlamid.eventmanagerservice.user.service.UserSecurityContextService;
 import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.user.service.UserService;
 import jakarta.persistence.LockModeType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
+import static git.xlamid.eventmanagerservice.event.model.enums.EventStatus.*;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -57,9 +62,9 @@ public class EventService {
                 (eventDto.getMaxPlaces(), locationEntity.getCapacity());
 
         EventEntity eventEntity = eventMapper.dtoToEntity(eventDto);
-        eventEntity.setStatus(EventStatus.WAIT_START.name());
+        eventEntity.setStatus(WAIT_START.name());
         eventEntity.setLocation(locationEntity);
-        eventEntity.setUser(userEntity);
+        eventEntity.setOwner(userEntity);
 
         GetEventDto res = eventMapper.entityToGetDto(
                 eventRepository.save(eventEntity)
@@ -96,7 +101,7 @@ public class EventService {
         EventEntity eventEntity = eventFinder.findEventById(eventId);
         LocationEntity locationEntity = locationService.findLocationById(eventDto.getLocationId());
 
-        eventValidator.validateAccess(eventEntity.getUser().getId());
+        eventValidator.validateAccess(eventEntity.getOwner());
         eventValidator.validateEarlyDate(eventDto.getDate());
         eventValidator.validateMaxPlacesForOccupiedPlaces
                 (eventDto.getMaxPlaces(), eventEntity.getOccupiedPlaces());
@@ -112,10 +117,28 @@ public class EventService {
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void deleteEventById(Long eventId) {
         EventEntity eventEntity = eventFinder.findEventById(eventId);
-        eventValidator.validateAccess(eventEntity.getUser().getId());
+        eventValidator.validateAccess(eventEntity.getOwner());
         eventValidator.validateEventForAvailable(eventId, eventEntity.getStatus());
 
-        eventEntity.setStatus(EventStatus.CANCELLED.name());
+        eventEntity.setStatus(CANCELLED.name());
         eventRepository.save(eventEntity);
+    }
+
+    @Scheduled
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public void updateEvents() {
+        List<EventEntity> startedEvents = eventRepository
+                .findAllForStartedEventsWithStatus(WAIT_START.name(), OffsetDateTime.now());
+        if (!startedEvents.isEmpty()) {
+            log.info("update {} events to started", startedEvents.size());
+            startedEvents.forEach(event -> event.setStatus(STARTED.name()));
+        }
+
+        List<EventEntity> finishedEvents = eventRepository
+                .findAllForFinishedEventsWithStatus(STARTED.name(), OffsetDateTime.now());
+        if (!finishedEvents.isEmpty()) {
+            log.info("update {} events to finished", startedEvents.size());
+            finishedEvents.forEach(event -> event.setStatus(FINISHED.name()));
+        }
     }
 }
