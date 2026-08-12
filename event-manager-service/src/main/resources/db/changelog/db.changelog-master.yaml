@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/changesets/09-07-26-0002_init-db.sql
   - include:
       file: db/changelog/changesets/28-07-26-0003_create-users.sql
+  - include:
+      file: db/changelog/changesets/06-08-26-0004_create-events.sql
+  - include:
+      file: db/changelog/changesets/06-08-26-0005_create-registrations.sql

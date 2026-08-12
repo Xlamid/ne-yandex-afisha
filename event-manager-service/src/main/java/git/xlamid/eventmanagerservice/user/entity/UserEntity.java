@@ -1,10 +1,15 @@
 package git.xlamid.eventmanagerservice.user.entity;
 
+import git.xlamid.eventmanagerservice.event.entity.EventEntity;
+import git.xlamid.eventmanagerservice.registration.entity.RegistrationEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Setter
@@ -30,4 +35,10 @@ public class UserEntity {
 
     @Column(name = "role")
     private String role;
+
+    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
+    private List<EventEntity> events = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<RegistrationEntity> registrations = new ArrayList<>();
 }

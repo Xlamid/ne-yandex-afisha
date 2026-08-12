@@ -1,37 +1,27 @@
 package git.xlamid.eventmanagerservice;
 
-import org.junit.jupiter.api.BeforeEach;
+import git.xlamid.eventmanagerservice.util.UserTestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.ObjectMapper;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-
 @SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 public abstract class AbstractWithContainerTest {
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private WebApplicationContext context;
-
+    protected UserTestUtil userTestUtil;
+    @Autowired
     protected MockMvc mockMvc;
-
-    @BeforeEach
-    void setupMockMvc() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-    }
 
     public static final PostgreSQLContainer POSTGRES_CONTAINER =
             new PostgreSQLContainer("postgres:16")
@@ -49,5 +39,9 @@ public abstract class AbstractWithContainerTest {
         registry.add("spring.datasource.url", POSTGRES_CONTAINER::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES_CONTAINER::getUsername);
         registry.add("spring.datasource.password", POSTGRES_CONTAINER::getPassword);
+    }
+
+    protected String getAuthHeader(String login) {
+        return "Bearer " + userTestUtil.getJwtTokenByLogin(login);
     }
 }

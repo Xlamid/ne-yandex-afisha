@@ -43,7 +43,9 @@ public class DefaultAdminInitializer {
                 adminLogin,
                 30,
                 passwordEncoder.encode(adminPassword),
-                UserRole.ADMIN.name()
+                UserRole.ADMIN.name(),
+                null,
+                null
         ));
         log.info("Default admin has been created");
     }
