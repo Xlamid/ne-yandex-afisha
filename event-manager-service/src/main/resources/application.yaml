@@ -28,3 +28,7 @@ springdoc:
     url: /event-manager-openapi.yaml
   api-docs:
     enabled: true
+
+event:
+  status:
+    cron: 0 * * * * *
