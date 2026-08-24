@@ -1,7 +1,7 @@
 package git.xlamid.eventmanagerservice.security.config;
 
-import git.xlamid.eventmanagerservice.exception.handler.GlobalAccessDeniedHandler;
-import git.xlamid.eventmanagerservice.exception.handler.GlobalAuthenticationEntryPoint;
+import git.xlamid.eventmanagerservice.exception.handler.EventManagerAccessDeniedHandler;
+import git.xlamid.eventmanagerservice.exception.handler.EventManagerAuthenticationEntryPoint;
 import git.xlamid.eventmanagerservice.security.jwt.filter.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,8 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
-    private final GlobalAuthenticationEntryPoint globalAuthenticationEntryPoint;
-    private final GlobalAccessDeniedHandler globalAccessDeniedHandler;
+    private final EventManagerAuthenticationEntryPoint eventManagerAuthenticationEntryPoint;
+    private final EventManagerAccessDeniedHandler eventManagerAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -61,8 +61,8 @@ public class SecurityConfig {
                                 .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception
-                                .authenticationEntryPoint(globalAuthenticationEntryPoint)
-                                .accessDeniedHandler(globalAccessDeniedHandler)
+                                .authenticationEntryPoint(eventManagerAuthenticationEntryPoint)
+                                .accessDeniedHandler(eventManagerAccessDeniedHandler)
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

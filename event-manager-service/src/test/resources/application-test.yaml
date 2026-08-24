@@ -1,5 +1,5 @@
 jwt:
-  secret-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
+  secret-private-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
   lifetime: 3600000
 
 default:

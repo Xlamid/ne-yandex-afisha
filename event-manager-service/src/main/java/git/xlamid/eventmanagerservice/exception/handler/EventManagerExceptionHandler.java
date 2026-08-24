@@ -1,6 +1,6 @@
 package git.xlamid.eventmanagerservice.exception.handler;
 
-import git.xlamid.eventmanagerservice.exception.dto.ExceptionMessageResponseDto;
+import git.xlamid.eventcommon.exeption.dto.ExceptionMessageResponseDto;
 import git.xlamid.eventmanagerservice.exception.model.exists.ExistsException;
 import git.xlamid.eventmanagerservice.exception.model.notfound.NotFoundException;
 import git.xlamid.eventmanagerservice.exception.model.validation.ValidationException;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class EventManagerExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ExceptionMessageResponseDto> handleNotFoundException(NotFoundException e) {

@@ -1,7 +1,7 @@
 package git.xlamid.eventmanagerservice.util;
 
 import git.xlamid.eventmanagerservice.exception.model.notfound.UserNotFoundException;
-import git.xlamid.eventmanagerservice.security.jwt.manager.JwtTokenManager;
+import git.xlamid.eventmanagerservice.security.jwt.manager.EventManagerJwtTokenManager;
 import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.user.model.enums.UserRole;
 import git.xlamid.eventmanagerservice.user.repository.UserRepository;
@@ -23,12 +23,12 @@ public class UserTestUtil {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenManager jwtTokenManager;
+    private final EventManagerJwtTokenManager jwtTokenManager;
 
     @Autowired
     public UserTestUtil(UserRepository userRepository,
                         PasswordEncoder passwordEncoder,
-                        JwtTokenManager jwtTokenManager) {
+                        EventManagerJwtTokenManager jwtTokenManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenManager = jwtTokenManager;
@@ -36,9 +36,9 @@ public class UserTestUtil {
 
     public String getJwtTokenByLogin(String login) {
         return switch (login) {
-            case USER_LOGIN_1 -> jwtTokenManager.generateToken(USER_LOGIN_1);
-            case ADMIN_LOGIN_1 -> jwtTokenManager.generateToken(ADMIN_LOGIN_1);
-            case USER_LOGIN_2 -> jwtTokenManager.generateToken(USER_LOGIN_2);
+            case USER_LOGIN_1 -> jwtTokenManager.generateToken(USER_LOGIN_1, null, null);
+            case ADMIN_LOGIN_1 -> jwtTokenManager.generateToken(ADMIN_LOGIN_1, null, null);
+            case USER_LOGIN_2 -> jwtTokenManager.generateToken(USER_LOGIN_2, null, null);
             default -> throw new UserNotFoundException("Test user with login: " + login + " not found");
         };
     }

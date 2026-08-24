@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5435/postgres-event-notificator
+    username: postgres
+    password: postgres
+
+jwt:
+  secret-public-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=

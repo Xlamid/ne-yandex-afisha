@@ -1,4 +1,4 @@
-package git.xlamid.eventmanagerservice.exception.dto;
+package git.xlamid.eventcommon.exeption.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

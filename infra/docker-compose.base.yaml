@@ -1,21 +1,40 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: event-manager-postgres
+
+  postgres-event-manager:
+    image: postgres:17
+    container_name: postgres-event-manager
     environment:
-      POSTGRES_DB: event-manager-service
+      POSTGRES_DB: postgres-event-manager
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5434:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d event-manager-service"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres-event-manager"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - event_manager_service_pg_data:/var/lib/postgresql/data
+      - postgres_event_manager_pg_data:/var/lib/postgresql/data
+
+  postgres-event-notificator:
+    image: postgres:17
+    container_name: postgres-event-notificator
+    environment:
+      POSTGRES_DB: postgres-event-notificator
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres-event-notificator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_event_notificator_pg_data:/var/lib/postgresql/data
 volumes:
-  event_manager_service_pg_data:
+  postgres_event_manager_pg_data:
+  postgres_event_notificator_pg_data:

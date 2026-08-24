@@ -124,7 +124,7 @@ public class EventService {
         eventRepository.save(eventEntity);
     }
 
-    @Scheduled(cron = "${event.status.cron}")
+    @Scheduled(fixedRateString = "${event.status.fixed-rate}")
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void updateEvents() {
         List<EventEntity> startedEvents = eventRepository

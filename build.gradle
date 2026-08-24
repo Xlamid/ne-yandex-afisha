@@ -1,25 +1,47 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
     id 'java'
-    id 'war'
+    id 'org.springframework.boot' version '4.1.0' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-group = 'git.xlamid'
-version = '0.0.1-SNAPSHOT'
-description = 'ne-yandex-afisha'
+allprojects {
+    group = 'git.xlamid'
+    version = '0.0.1-SNAPSHOT'
+    description = 'ne-yandex-afisha'
+}
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    repositories {
+        mavenCentral()
+    }
 
-dependencies {
-}
+    dependencyManagement {
+        imports {
+            mavenBom SpringBootPlugin.BOM_COORDINATES
+        }
+        dependencies {
+            dependency 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+            dependency 'org.mapstruct:mapstruct:1.6.3'
+            dependency 'org.mapstruct:mapstruct-processor:1.6.3'
+            dependency 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+            dependency 'io.jsonwebtoken:jjwt-api:0.13.0'
+            dependency 'io.jsonwebtoken:jjwt-impl:0.13.0'
+            dependency 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+        }
+    }
 
-tasks.named('test') {
-    useJUnitPlatform()
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }

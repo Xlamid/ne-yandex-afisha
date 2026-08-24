@@ -1,7 +1,6 @@
 package git.xlamid.eventmanagerservice.exception.handler;
 
-import git.xlamid.eventmanagerservice.exception.dto.ExceptionMessageResponseDto;
-import jakarta.servlet.ServletException;
+import git.xlamid.eventcommon.exeption.dto.ExceptionMessageResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +19,14 @@ import java.time.OffsetDateTime;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GlobalAccessDeniedHandler implements AccessDeniedHandler {
+public class EventManagerAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
 
     @Override
     public void handle(@NonNull HttpServletRequest request,
                        @NonNull HttpServletResponse response,
-                       @NonNull AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                       @NonNull AccessDeniedException accessDeniedException) throws IOException {
         log.error("Access denied exception", accessDeniedException);
         ExceptionMessageResponseDto dto = new ExceptionMessageResponseDto(
                 "Forbidden",
