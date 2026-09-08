@@ -855,9 +855,6 @@ public class EventControllerIntegrationTest extends AbstractWithContainerTest {
         assertEquals(FINISHED.name(), eventRepository.findById(justFinished.getId()).orElseThrow().getStatus());
     }
 
-
-
-
     @Test
     void shouldNotChangeStatusWhenNoEventsMeetCriteriaForUpdateEvents() {
         // Arrange

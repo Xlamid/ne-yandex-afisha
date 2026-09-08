@@ -7,6 +7,11 @@ spring:
   profiles:
     active: dev
 
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   jpa:
     hibernate:
       ddl-auto: none

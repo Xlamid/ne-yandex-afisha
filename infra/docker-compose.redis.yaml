@@ -5,7 +5,7 @@ services:
     image: redis:7
     container_name: redis-event-manager
     ports:
-      - "6380:6379"
+      - "6380:6380"
     volumes:
       - redis_event_manager_data:/data
 volumes:
