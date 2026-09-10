@@ -40,7 +40,6 @@ public class NotificationEventListener {
             ack.acknowledge();
         } catch (Exception e) {
             log.error("Failed to process event for messageId: {}", messageId, e);
-            throw e;
         }
     }
 }
