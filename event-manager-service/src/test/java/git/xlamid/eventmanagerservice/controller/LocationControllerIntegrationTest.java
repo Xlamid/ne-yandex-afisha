@@ -1,6 +1,6 @@
 package git.xlamid.eventmanagerservice.controller;
 
-import git.xlamid.eventmanagerservice.AbstractWithContainerTest;
+import git.xlamid.eventmanagerservice.EventManagerAbstractWithContainerTest;
 import git.xlamid.eventmanagerservice.location.dto.CreateLocationDto;
 import git.xlamid.eventmanagerservice.location.dto.UpdateLocationDto;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Transactional
-public class LocationControllerIntegrationTest extends AbstractWithContainerTest {
+public class LocationControllerIntegrationTest extends EventManagerAbstractWithContainerTest {
 
     private static final String BASE_URL = "/locations";
     private static final String ADMIN_LOGIN = "admin1";

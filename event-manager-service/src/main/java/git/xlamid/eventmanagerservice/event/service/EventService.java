@@ -127,8 +127,8 @@ public class EventService {
         eventRepository.save(eventEntity);
     }
 
-    @Scheduled(fixedRateString = "${event.status.fixed-rate}")
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Scheduled(fixedRateString = "${scheduled.fixed-rate.event-status}")
     public void updateEvents() {
         updateStartedEvents();
         updateFinishedEvents();
@@ -140,7 +140,7 @@ public class EventService {
         if (!startedEvents.isEmpty()) {
             log.info("update {} events to started", startedEvents.size());
             startedEvents.forEach(eventEntity ->
-                    eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_UPDATED, false,
+                    eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_STARTED, false,
                             eEntity -> eEntity.setStatus(STARTED.name())));
         }
     }
@@ -151,7 +151,7 @@ public class EventService {
         if (!finishedEvents.isEmpty()) {
             log.info("update {} events to finished", finishedEvents.size());
             finishedEvents.forEach(eventEntity ->
-                    eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_UPDATED, false,
+                    eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_FINISHED, false,
                             eEntity -> eEntity.setStatus(FINISHED.name())));
         }
     }

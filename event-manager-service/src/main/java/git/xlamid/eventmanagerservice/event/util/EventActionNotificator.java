@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -30,16 +31,22 @@ public class EventActionNotificator {
         Long currentUserId = isUser ? userContextService.getUserIdFromSecurityContext() : null;
         EventEntity oldEventEntity = (eventType.equals(EVENT_CREATED)) ?
                 new EventEntity() : eventMapper.copy(eventEntity);
+        List<Long> userIds = getUserIds(eventEntity);
 
-        if (action != null && !eventType.equals(EVENT_CREATED)) {
+        if (action != null) {
             action.accept(eventEntity);
         }
+        if (eventType.equals(EVENT_CREATED)) {
+            userIds = new ArrayList<>(userIds);
+            userIds.add(currentUserId);
+        }
+
         notificationEventSender.sendEvent(
                 currentUserId,
                 eventType,
                 oldEventEntity,
                 eventEntity,
-                getUserIds(eventEntity)
+                userIds
         );
     }
 

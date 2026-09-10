@@ -5,7 +5,7 @@ spring:
 
 jwt:
   secret-private-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
-  lifetime: 3600000
+  lifetime: 600_000 # 10m
 
 default:
   admin:

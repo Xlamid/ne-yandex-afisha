@@ -1,9 +1,9 @@
-package git.xlamid.eventmanagerservice.controller;
+package git.xlamid.eventmanagerservice.kafka;
 
 import git.xlamid.eventcommon.kafka.model.FieldChange;
 import git.xlamid.eventcommon.kafka.model.NotificationKafkaEvent;
 import git.xlamid.eventcommon.kafka.model.enums.EventType;
-import git.xlamid.eventmanagerservice.AbstractWithContainerTest;
+import git.xlamid.eventmanagerservice.EventManagerAbstractWithContainerTest;
 import git.xlamid.eventmanagerservice.event.dto.CreateEventDto;
 import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
@@ -20,9 +20,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -40,7 +38,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class EventProducerKafkaIntegrationTest extends EventManagerAbstractWithContainerTest {
 
     @Value("${spring.kafka.topic.notification}")
     private String topicName;
@@ -58,11 +57,8 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
     private UserEntity testUser1;
     private LocationEntity testLocation;
 
-    @BeforeEach
-    public void setup() {
-        testUser1 = userTestUtil.getTestUserByLogin("user1");
-        testLocation = dataTestUtil.getTestLocation();
-
+    @BeforeAll
+    public void setupKafka() {
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
                 KAFKA_CONTAINER.getBootstrapServers(),
                 "event-notification-test",
@@ -77,14 +73,24 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
         );
         consumer = cf.createConsumer();
         consumer.subscribe(List.of(topicName));
+        while (consumer.assignment().isEmpty()) {
+            consumer.poll(Duration.ofMillis(100));
+        }
         KafkaTestUtils.getRecords(consumer, Duration.ofMillis(100));
     }
 
-    @AfterEach
+    @AfterAll
     public void tearDown() {
         if (consumer != null) {
             consumer.close();
         }
+    }
+
+    @BeforeEach
+    public void setup() {
+        testUser1 = userTestUtil.getTestUserByLogin("user1");
+        testLocation = dataTestUtil.getTestLocation();
+        consumer.poll(Duration.ofMillis(100));
     }
 
     // createEvent()
@@ -110,7 +116,7 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils
-                .getSingleRecord(consumer, topicName, Duration.ofSeconds(1));
+                .getSingleRecord(consumer, topicName, Duration.ofMillis(300));
         assertNotNull(record);
 
         NotificationKafkaEvent kafkaEvent = objectMapper
@@ -154,7 +160,7 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils
-                .getSingleRecord(consumer, topicName, Duration.ofSeconds(1));
+                .getSingleRecord(consumer, topicName, Duration.ofMillis(300));
         NotificationKafkaEvent kafkaEvent = objectMapper
                 .readValue(record.value(), NotificationKafkaEvent.class);
 
@@ -198,7 +204,7 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
 
         // Assert
         ConsumerRecords<String, String> records = KafkaTestUtils
-                .getRecords(consumer, Duration.ofSeconds(1));
+                .getRecords(consumer, Duration.ofMillis(300));
         assertTrue(records.isEmpty());
     }
 
@@ -221,7 +227,7 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils
-                .getSingleRecord(consumer, topicName, Duration.ofSeconds(1));
+                .getSingleRecord(consumer, topicName, Duration.ofMillis(300));
         NotificationKafkaEvent kafkaEvent = objectMapper
                 .readValue(record.value(), NotificationKafkaEvent.class);
 
@@ -253,11 +259,11 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils
-                .getSingleRecord(consumer, topicName, Duration.ofSeconds(1));
+                .getSingleRecord(consumer, topicName, Duration.ofMillis(300));
         NotificationKafkaEvent kafkaEvent = objectMapper
                 .readValue(record.value(), NotificationKafkaEvent.class);
 
-        assertEquals(EventType.EVENT_UPDATED, kafkaEvent.getEventType());
+        assertEquals(EventType.EVENT_STARTED, kafkaEvent.getEventType());
         assertNull(kafkaEvent.getChangedById());
 
         FieldChange statusChange = getFieldChange(kafkaEvent, "status");
@@ -284,11 +290,11 @@ public class EventKafkaIntegrationTest extends AbstractWithContainerTest {
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils
-                .getSingleRecord(consumer, topicName, Duration.ofSeconds(1));
+                .getSingleRecord(consumer, topicName, Duration.ofMillis(300));
         NotificationKafkaEvent kafkaEvent = objectMapper
                 .readValue(record.value(), NotificationKafkaEvent.class);
 
-        assertEquals(EventType.EVENT_UPDATED, kafkaEvent.getEventType());
+        assertEquals(EventType.EVENT_FINISHED, kafkaEvent.getEventType());
         assertNull(kafkaEvent.getChangedById());
 
         FieldChange statusChange = getFieldChange(kafkaEvent, "status");

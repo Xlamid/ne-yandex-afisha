@@ -1,6 +1,6 @@
 package git.xlamid.eventmanagerservice.controller;
 
-import git.xlamid.eventmanagerservice.AbstractWithContainerTest;
+import git.xlamid.eventmanagerservice.EventManagerAbstractWithContainerTest;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import git.xlamid.eventmanagerservice.event.model.enums.EventStatus;
 import git.xlamid.eventmanagerservice.event.repository.EventRepository;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-public class RegistrationControllerIntegrationTest extends AbstractWithContainerTest {
+public class RegistrationControllerIntegrationTest extends EventManagerAbstractWithContainerTest {
 
     private static final String BASE_URL = "/events/registrations";
 

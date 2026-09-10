@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    topic:
+      notification: notification-topic
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+jwt:
+  secret-public-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=

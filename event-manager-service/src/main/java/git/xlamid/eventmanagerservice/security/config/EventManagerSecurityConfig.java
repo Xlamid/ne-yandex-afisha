@@ -19,7 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class EventManagerSecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
     private final EventManagerAuthenticationEntryPoint eventManagerAuthenticationEntryPoint;

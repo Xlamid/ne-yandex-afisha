@@ -1,6 +1,6 @@
-package git.xlamid.eventmanagerservice;
+package git.xlamid.eventnotificatorservice;
 
-import git.xlamid.eventmanagerservice.util.UserTestUtil;
+import git.xlamid.eventnotificatorservice.util.UserTestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -16,7 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public abstract class AbstractWithContainerTest {
+public abstract class EventNotificatorAbstractWithContainerTest {
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
