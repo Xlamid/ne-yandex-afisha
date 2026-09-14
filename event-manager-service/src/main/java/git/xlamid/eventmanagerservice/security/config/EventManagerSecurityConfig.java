@@ -1,0 +1,80 @@
+package git.xlamid.eventmanagerservice.security.config;
+
+import git.xlamid.eventmanagerservice.exception.handler.EventManagerAccessDeniedHandler;
+import git.xlamid.eventmanagerservice.exception.handler.EventManagerAuthenticationEntryPoint;
+import git.xlamid.eventmanagerservice.security.jwt.filter.JwtTokenFilter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@RequiredArgsConstructor
+public class EventManagerSecurityConfig {
+
+    private final JwtTokenFilter jwtTokenFilter;
+    private final EventManagerAuthenticationEntryPoint eventManagerAuthenticationEntryPoint;
+    private final EventManagerAccessDeniedHandler eventManagerAccessDeniedHandler;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        return http
+                .formLogin(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(requests ->
+                        requests
+                                // UserController
+                                .requestMatchers(HttpMethod.POST, "/users", "/users/auth")
+                                    .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/users/{userId}")
+                                    .hasAnyAuthority("ADMIN")
+
+                                // LocationController
+                                .requestMatchers(HttpMethod.GET, "/locations", "/locations/**")
+                                    .hasAnyAuthority("USER", "ADMIN")
+                                .requestMatchers("/locations/**")
+                                    .hasAnyAuthority("ADMIN")
+
+                                // EventController
+                                .requestMatchers(HttpMethod.POST, "/events")
+                                    .hasAnyAuthority("USER")
+                                .requestMatchers(HttpMethod.GET, "/events/my")
+                                    .hasAnyAuthority("USER")
+                                .requestMatchers("/events/{eventId}", "/events/search")
+                                    .hasAnyAuthority("ADMIN", "USER")
+
+                                // RegistrationController
+                                .requestMatchers("/events/registrations/**")
+                                    .hasAnyAuthority("USER")
+
+                                .anyRequest().authenticated())
+                .exceptionHandling(exception ->
+                        exception
+                                .authenticationEntryPoint(eventManagerAuthenticationEntryPoint)
+                                .accessDeniedHandler(eventManagerAccessDeniedHandler)
+                )
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}

@@ -1,3 +1,5 @@
 rootProject.name = 'ne-yandex-afisha'
 
 include 'event-manager-service'
+include 'event-notificator-service'
+include 'event-common'

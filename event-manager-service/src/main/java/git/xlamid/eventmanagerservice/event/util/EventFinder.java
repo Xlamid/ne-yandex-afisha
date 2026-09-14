@@ -13,7 +13,7 @@ public class EventFinder {
     private final EventRepository eventRepository;
 
     public EventEntity findEventById(Long id) {
-        return eventRepository.findByIdWithLocationIdAndUserId(id)
+        return eventRepository.findByIdWithLocationIdAndUserIdAndRegistrationId(id)
                 .orElseThrow(() -> new EventNotFoundException("Event with id: " + id + " not found"));
     }
 }

@@ -1,12 +1,17 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5434/event-manager-service
+    url: jdbc:postgresql://localhost:5434/postgres-event-manager
     username: postgres
     password: postgres
 
+  kafka:
+    bootstrap-servers: localhost:9093
+    topic:
+      notification: notification-topic
+
 jwt:
-  secret-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
-  lifetime: 3_600_000
+  secret-private-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
+  lifetime: 2_678_400_000 # 31d
 
 default:
   admin:

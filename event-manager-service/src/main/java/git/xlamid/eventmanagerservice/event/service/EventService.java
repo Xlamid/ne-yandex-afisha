@@ -7,10 +7,7 @@ import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import git.xlamid.eventmanagerservice.event.mapper.EventMapper;
 import git.xlamid.eventmanagerservice.event.repository.EventRepository;
-import git.xlamid.eventmanagerservice.event.util.EventFinder;
-import git.xlamid.eventmanagerservice.event.util.EventSorter;
-import git.xlamid.eventmanagerservice.event.util.EventSpecification;
-import git.xlamid.eventmanagerservice.event.util.EventValidator;
+import git.xlamid.eventmanagerservice.event.util.*;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import git.xlamid.eventmanagerservice.location.service.LocationService;
 import git.xlamid.eventmanagerservice.registration.service.RegistrationService;
@@ -31,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import static git.xlamid.eventcommon.kafka.model.enums.EventType.*;
 import static git.xlamid.eventmanagerservice.event.model.enums.EventStatus.*;
 
 @Slf4j
@@ -44,6 +42,7 @@ public class EventService {
     private final EventFinder eventFinder;
     private final EventSpecification eventSpecification;
     private final EventSorter eventSorter;
+    private final EventActionNotificator eventActionNotificator;
 
     private final LocationService locationService;
     private final UserSecurityContextService userContextService;
@@ -53,9 +52,9 @@ public class EventService {
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public GetEventDto createEvent(CreateEventDto eventDto) {
+        Long currentUserId = userContextService.getUserIdFromSecurityContext();
         LocationEntity locationEntity = locationService.findLocationById(eventDto.getLocationId());
-        UserEntity userEntity = userService
-                .findUserById(userContextService.getUserIdFromSecurityContext());
+        UserEntity userEntity = userService.findUserById(currentUserId);
 
         eventValidator.validateEarlyDate(eventDto.getDate());
         eventValidator.validateMaxPlacesForLocation
@@ -70,6 +69,8 @@ public class EventService {
                 eventRepository.save(eventEntity)
         );
         registrationService.registrationUserOnEventByEventId(eventEntity.getId());
+
+        eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_CREATED, true, null);
         return res;
     }
 
@@ -108,7 +109,8 @@ public class EventService {
         eventValidator.validateMaxPlacesForLocation
                 (eventDto.getMaxPlaces(), locationEntity.getCapacity());
 
-        eventMapper.updateEntityByDto(eventEntity, eventDto);
+        eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_UPDATED, true,
+                eEntity -> eventMapper.updateEntityByDto(eEntity, eventDto));
         return eventMapper.entityToGetDto(
                 eventRepository.save(eventEntity)
         );
@@ -120,25 +122,37 @@ public class EventService {
         eventValidator.validateAccess(eventEntity.getOwner());
         eventValidator.validateEventForAvailable(eventId, eventEntity.getStatus());
 
-        eventEntity.setStatus(CANCELLED.name());
+        eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_CANCELLED, true,
+                eEntity -> eEntity.setStatus(CANCELLED.name()));
         eventRepository.save(eventEntity);
     }
 
-    @Scheduled(cron = "${event.status.cron}")
     @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Scheduled(fixedRateString = "${scheduled.fixed-rate.event-status}")
     public void updateEvents() {
+        updateStartedEvents();
+        updateFinishedEvents();
+    }
+
+    private void updateStartedEvents() {
         List<EventEntity> startedEvents = eventRepository
                 .findAllForStartedEventsWithStatus(WAIT_START.name(), OffsetDateTime.now());
         if (!startedEvents.isEmpty()) {
             log.info("update {} events to started", startedEvents.size());
-            startedEvents.forEach(event -> event.setStatus(STARTED.name()));
+            startedEvents.forEach(eventEntity ->
+                    eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_STARTED, false,
+                            eEntity -> eEntity.setStatus(STARTED.name())));
         }
+    }
 
+    private void updateFinishedEvents() {
         List<EventEntity> finishedEvents = eventRepository
                 .findAllForFinishedEventsWithStatus(STARTED.name(), OffsetDateTime.now());
         if (!finishedEvents.isEmpty()) {
-            log.info("update {} events to finished", startedEvents.size());
-            finishedEvents.forEach(event -> event.setStatus(FINISHED.name()));
+            log.info("update {} events to finished", finishedEvents.size());
+            finishedEvents.forEach(eventEntity ->
+                    eventActionNotificator.applyActionAndNotify(eventEntity, EVENT_FINISHED, false,
+                            eEntity -> eEntity.setStatus(FINISHED.name())));
         }
     }
 }

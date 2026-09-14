@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5435/postgres-event-notificator
+    username: postgres
+    password: postgres
+
+  kafka:
+    bootstrap-servers: localhost:9093
+    topic:
+      notification: notification-topic
+
+jwt:
+  secret-public-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=

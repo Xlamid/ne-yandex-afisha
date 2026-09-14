@@ -1,17 +1,15 @@
 package git.xlamid.eventmanagerservice.controller;
 
-import git.xlamid.eventmanagerservice.AbstractWithContainerTest;
+import git.xlamid.eventmanagerservice.EventManagerAbstractWithContainerTest;
 import git.xlamid.eventmanagerservice.user.dto.AuthUserDto;
 import git.xlamid.eventmanagerservice.user.dto.RegisterUserDto;
 import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.user.model.enums.UserRole;
 import git.xlamid.eventmanagerservice.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -24,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-public class UserControllerIntegrationTest extends AbstractWithContainerTest {
+public class UserControllerIntegrationTest extends EventManagerAbstractWithContainerTest {
 
     private static final String BASE_URL = "/users";
     private static final String ADMIN_LOGIN = "admin1";

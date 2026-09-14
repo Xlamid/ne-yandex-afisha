@@ -11,6 +11,8 @@ import static org.mapstruct.NullValuePropertyMappingStrategy.IGNORE;
 @Mapper(componentModel = "spring")
 public interface EventMapper {
 
+    EventEntity copy(EventEntity entity);
+
     EventEntity dtoToEntity(CreateEventDto dto);
 
     @Mapping(source = "location.id", target = "locationId")

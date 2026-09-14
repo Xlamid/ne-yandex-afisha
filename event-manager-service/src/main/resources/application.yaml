@@ -7,6 +7,15 @@ spring:
   profiles:
     active: dev
 
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -29,6 +38,6 @@ springdoc:
   api-docs:
     enabled: true
 
-event:
-  status:
-    cron: 0 * * * * *
+scheduled:
+  fixed-rate:
+    event-status: 1m

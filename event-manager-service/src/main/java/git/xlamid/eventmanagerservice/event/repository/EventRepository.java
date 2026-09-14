@@ -18,9 +18,10 @@ public interface EventRepository extends JpaRepository<EventEntity, Long>, JpaSp
             SELECT e FROM EventEntity e
             LEFT JOIN FETCH e.location
             LEFT JOIN FETCH e.owner
+            LEFT JOIN FETCH e.registrations
             WHERE e.id = :id
             """)
-    Optional<EventEntity> findByIdWithLocationIdAndUserId(@Param("id") Long id);
+    Optional<EventEntity> findByIdWithLocationIdAndUserIdAndRegistrationId(@Param("id") Long id);
 
     @Query("""
             SELECT e FROM EventEntity e

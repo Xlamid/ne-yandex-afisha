@@ -1,7 +1,7 @@
 package git.xlamid.eventmanagerservice.security.jwt.filter;
 
 import git.xlamid.eventmanagerservice.exception.model.notfound.NotFoundException;
-import git.xlamid.eventmanagerservice.security.jwt.manager.JwtTokenManager;
+import git.xlamid.eventmanagerservice.security.jwt.manager.EventManagerJwtTokenManager;
 import git.xlamid.eventmanagerservice.security.service.EventManagerUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,7 +24,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final JwtTokenManager jwtTokenManager;
+    private static final String AUTH_START = "Bearer ";
+
+    private final EventManagerJwtTokenManager jwtTokenManager;
     private final EventManagerUserDetailsService userDetailsService;
 
     @Override
@@ -32,12 +34,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(AUTH_START)) {
             log.error("Incorrect JWT Token: {}", token);
             filterChain.doFilter(request, response);
             return;
         }
-        token = token.substring("Bearer ".length());
+        token = token.substring(AUTH_START.length());
 
         String login;
         UserDetails userDetails;
@@ -45,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             login = jwtTokenManager.getLoginFromToken(token);
             userDetails = userDetailsService.loadUserByUsername(login);
         } catch (NotFoundException e) {
-            log.error("User with JWT not found", e);
+            log.error("User with JWT Token: {} not found", token, e);
             filterChain.doFilter(request, response);
             return;
         } catch (Exception e) {

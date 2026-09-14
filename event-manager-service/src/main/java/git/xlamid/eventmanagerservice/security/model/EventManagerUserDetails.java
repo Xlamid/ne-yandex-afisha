@@ -2,11 +2,13 @@ package git.xlamid.eventmanagerservice.security.model;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 public class EventManagerUserDetails extends User {
@@ -18,9 +20,11 @@ public class EventManagerUserDetails extends User {
                                    Integer age,
                                    String username,
                                    @NotNull String password,
-                                   Collection<? extends GrantedAuthority> authorities) {
+                                   String userRole) {
         this.id = id;
         this.age = age;
+        Collection<? extends GrantedAuthority> authorities =
+                new ArrayList<>(List.of(new SimpleGrantedAuthority(userRole)));
         super(username, password, authorities);
     }
 }

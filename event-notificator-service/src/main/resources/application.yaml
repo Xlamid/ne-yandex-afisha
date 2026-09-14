@@ -1,0 +1,43 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: event-notificator-service
+  profiles:
+    active: dev
+
+  kafka:
+    consumer:
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      group-id: event-notificator-group
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    url: /event-notificator-openapi.yaml
+  api-docs:
+    enabled: true
+
+scheduled:
+  fixed-rate:
+    notifications: 1d
