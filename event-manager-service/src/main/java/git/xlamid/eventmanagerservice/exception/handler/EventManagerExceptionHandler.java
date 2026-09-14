@@ -1,6 +1,6 @@
 package git.xlamid.eventmanagerservice.exception.handler;
 
-import git.xlamid.eventcommon.exeption.dto.ExceptionMessageResponseDto;
+import git.xlamid.eventcommon.exception.dto.ExceptionMessageResponseDto;
 import git.xlamid.eventmanagerservice.exception.model.exists.ExistsException;
 import git.xlamid.eventmanagerservice.exception.model.notfound.NotFoundException;
 import git.xlamid.eventmanagerservice.exception.model.validation.ValidationException;

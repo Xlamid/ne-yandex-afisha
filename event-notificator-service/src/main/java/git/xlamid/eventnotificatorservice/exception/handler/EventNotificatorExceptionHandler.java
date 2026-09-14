@@ -1,6 +1,6 @@
 package git.xlamid.eventnotificatorservice.exception.handler;
 
-import git.xlamid.eventcommon.exeption.dto.ExceptionMessageResponseDto;
+import git.xlamid.eventcommon.exception.dto.ExceptionMessageResponseDto;
 import git.xlamid.eventnotificatorservice.exception.model.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

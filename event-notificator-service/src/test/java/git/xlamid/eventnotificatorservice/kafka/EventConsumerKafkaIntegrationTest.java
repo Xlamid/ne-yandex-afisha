@@ -65,7 +65,7 @@ public class EventConsumerKafkaIntegrationTest extends EventNotificatorAbstractW
 
         // Act
         kafkaTemplate.send(topicName, event.getOwnerId(), event).get();
-        awaitUntilPayloadIsSaved(messageId);
+        waitForPayloadToBeSaved(messageId);
 
         // Assert
         List<NotificationEventPayloadEntity> payloads = payloadRepository.findAll();
@@ -117,7 +117,7 @@ public class EventConsumerKafkaIntegrationTest extends EventNotificatorAbstractW
         assertEquals(1, notifications.size());
     }
 
-    private void awaitUntilPayloadIsSaved(UUID messageId) throws InterruptedException {
+    private void waitForPayloadToBeSaved(UUID messageId) throws InterruptedException {
         for (int i = 5; i > 0; i--) {
             if (payloadRepository.existsByMessageId(messageId)) {
                 return;

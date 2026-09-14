@@ -1,6 +1,6 @@
 package git.xlamid.eventmanagerservice.exception.handler;
 
-import git.xlamid.eventcommon.exeption.dto.ExceptionMessageResponseDto;
+import git.xlamid.eventcommon.exception.dto.ExceptionMessageResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
