@@ -6,7 +6,7 @@ import git.xlamid.eventmanagerservice.event.dto.EventSearchRequestDto;
 import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import git.xlamid.eventmanagerservice.event.repository.EventRepository;
-import git.xlamid.eventmanagerservice.event.service.EventService;
+import git.xlamid.eventmanagerservice.event.service.EventScheduler;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.util.DataTestUtil;
@@ -28,14 +28,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-public class EventControllerIntegrationTest extends EventManagerAbstractWithContainerTest {
+public class EventControllerForDBIntegrationTest extends EventManagerAbstractWithContainerTest {
 
     private static final String BASE_URL = "/events";
 
     @Autowired
     private EventRepository eventRepository;
     @Autowired
-    private EventService eventService;
+    private EventScheduler eventScheduler;
     @Autowired
     private DataTestUtil dataTestUtil;
     @Autowired
@@ -765,7 +765,7 @@ public class EventControllerIntegrationTest extends EventManagerAbstractWithCont
         eventRepository.save(readyToStartEvent);
 
         // Act
-        eventService.updateEvents();
+        eventScheduler.updateEvents();
 
         // Assert
         EventEntity updatedFutureEvent = eventRepository.findById(futureEvent.getId()).orElseThrow();
@@ -801,7 +801,7 @@ public class EventControllerIntegrationTest extends EventManagerAbstractWithCont
         eventRepository.save(finishedEvent);
 
         // Act
-        eventService.updateEvents();
+        eventScheduler.updateEvents();
 
         // Assert
         EventEntity updatedRunningEvent = eventRepository.findById(runningEvent.getId()).orElseThrow();
@@ -847,7 +847,7 @@ public class EventControllerIntegrationTest extends EventManagerAbstractWithCont
         eventRepository.save(justFinished);
 
         // Act
-        eventService.updateEvents();
+        eventScheduler.updateEvents();
 
         // Assert
         assertEquals(WAIT_START.name(), eventRepository.findById(future.getId()).orElseThrow().getStatus());
@@ -901,7 +901,7 @@ public class EventControllerIntegrationTest extends EventManagerAbstractWithCont
         eventRepository.save(alreadyFinishedEvent);
 
         // Act
-        eventService.updateEvents();
+        eventScheduler.updateEvents();
 
         // Assert
         assertEquals(WAIT_START.name(), eventRepository.findById(farFutureEvent.getId()).orElseThrow().getStatus());
@@ -917,7 +917,7 @@ public class EventControllerIntegrationTest extends EventManagerAbstractWithCont
         assertEquals(0, initialCount);
 
         // Act & Assert
-        assertDoesNotThrow(() -> eventService.updateEvents());
+        assertDoesNotThrow(() -> eventScheduler.updateEvents());
         assertEquals(0, eventRepository.count());
     }
 }

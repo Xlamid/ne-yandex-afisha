@@ -8,6 +8,11 @@ spring:
     bootstrap-servers: localhost:9093
     topic:
       notification: notification-topic
+      
+  data:
+    redis:
+      host: localhost
+      port: 6380
 
 jwt:
   secret-private-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=
@@ -17,3 +22,10 @@ default:
   admin:
     login: admin
     password: password
+    
+cache:
+  ttl:
+    min:
+      default: 10
+      location: 10
+      event: 10

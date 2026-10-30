@@ -11,3 +11,10 @@ default:
   admin:
     login: admin
     password: password
+    
+cache:
+  ttl:
+    min:
+      default: 1
+      location: 1
+      event: 1

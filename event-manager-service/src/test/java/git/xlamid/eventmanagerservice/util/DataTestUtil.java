@@ -15,7 +15,7 @@ public class DataTestUtil {
 
     public LocationEntity getTestLocation() {
         return locationRepository.findByName(DEFAULT_LOCATION_NAME)
-                .orElse(createLocation(DEFAULT_LOCATION_NAME));
+                .orElseGet(() -> createLocation(DEFAULT_LOCATION_NAME));
     }
 
     private LocationEntity createLocation(String name) {
