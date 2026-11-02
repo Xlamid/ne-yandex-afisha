@@ -2,12 +2,15 @@ package git.xlamid.eventmanagerservice.cache.config;
 
 import git.xlamid.eventmanagerservice.event.dto.GetEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
+import git.xlamid.eventmanagerservice.exception.handler.EventManagerCacheErrorHandler;
 import git.xlamid.eventmanagerservice.location.dto.GetLocationDto;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -27,16 +30,16 @@ import java.util.Map;
 
 @EnableCaching
 @Configuration
-public class RedisConfig {
+public class EventManagerRedisConfig implements CachingConfigurer {
     
     private final Duration defaultTtl;
     private final Duration locationTtl;
     private final Duration eventTtl;
 
     @Autowired
-    public RedisConfig(@Value("${cache.ttl.min.default}") long defaultTtl, 
-                       @Value("${cache.ttl.min.location}") long locationTtl, 
-                       @Value("${cache.ttl.min.event}") long eventTtl) {
+    public EventManagerRedisConfig(@Value("${cache.ttl.min.default}") long defaultTtl,
+                                   @Value("${cache.ttl.min.location}") long locationTtl,
+                                   @Value("${cache.ttl.min.event}") long eventTtl) {
         this.defaultTtl = Duration.ofMinutes(defaultTtl);
         this.locationTtl = Duration.ofMinutes(locationTtl);
         this.eventTtl = Duration.ofMinutes(eventTtl);
@@ -88,6 +91,7 @@ public class RedisConfig {
         return redisTemplate;
     }
 
+    // TODO как будто можно убрать дублирование
     private <T> RedisCacheConfiguration buildConfig(RedisCacheConfiguration config,
                                                     Duration ttl,
                                                     ObjectMapper objectMapper,
@@ -104,5 +108,10 @@ public class RedisConfig {
         return config.entryTtl(ttl)
                 .serializeValuesWith(SerializationPair.fromSerializer(
                         new JacksonJsonRedisSerializer<>(objectMapper, type)));
+    }
+    
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new EventManagerCacheErrorHandler();
     }
 }

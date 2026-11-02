@@ -30,7 +30,7 @@ public class LocationController {
 
     @PostMapping
     public ResponseEntity<GetLocationDto> createLocation(@Valid @RequestBody CreateLocationDto dto,
-                                                         @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                         @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Creating location: {}", dto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -38,7 +38,7 @@ public class LocationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<GetLocationDto>> getLocations(@RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+    public ResponseEntity<List<GetLocationDto>> getLocations(@RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Getting locations");
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -47,7 +47,7 @@ public class LocationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<GetLocationDto> getLocationById(@PathVariable Long id,
-                                                          @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                          @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Getting location with id: {}", id);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -57,7 +57,7 @@ public class LocationController {
     @PutMapping("/{id}")
     public ResponseEntity<GetLocationDto> updateLocation(@PathVariable Long id,
                                                          @Valid @RequestBody UpdateLocationDto dto,
-                                                         @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                         @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Updating location: {} with id {}", dto, id);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -66,7 +66,7 @@ public class LocationController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id,
-                                               @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                               @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Deleting location with id: {}", id);
         locationServices.get(cacheMode).deleteLocation(id);
         return ResponseEntity

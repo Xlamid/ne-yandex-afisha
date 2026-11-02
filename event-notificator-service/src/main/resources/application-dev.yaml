@@ -8,6 +8,11 @@ spring:
     bootstrap-servers: localhost:9093
     topic:
       notification: notification-topic
+      
+  data:
+    redis:
+      host: localhost
+      port: 6380
 
 jwt:
   secret-public-key: 5dMCUsBMr/XnfgTNuGPrHclC93Mda6qwyCV6MF/B49A=

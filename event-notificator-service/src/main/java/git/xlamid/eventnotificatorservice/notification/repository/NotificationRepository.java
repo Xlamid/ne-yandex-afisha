@@ -27,4 +27,6 @@ public interface NotificationRepository extends JpaRepository<NotificationEntity
             WHERE n.readAt IS NOT NULL AND n.readAt <= :threshold
             """)
     List<NotificationEntity> findAllOldAndReadNotifications(@Param("threshold") OffsetDateTime threshold);
+    
+    long countByUserIdAndIsReadFalse(Long userId);
 }

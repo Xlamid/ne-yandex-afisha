@@ -37,6 +37,13 @@ public class EventNotificatiorSecurityConfig {
                                 .requestMatchers("/notifications")
                                     .hasAnyAuthority("ADMIN", "USER")
 
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml",
+                                        "/event-notificator-openapi.yaml"
+                                ).permitAll()
                                 .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception

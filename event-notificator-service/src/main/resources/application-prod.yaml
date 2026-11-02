@@ -3,6 +3,16 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}
+    topic:
+      notification: ${NOTIFICATION_TOPIC}
+  
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
 jwt:
   secret-public-key: ${JWT_SECRET_KEY}

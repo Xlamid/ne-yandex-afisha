@@ -37,7 +37,7 @@ public class EventScheduler {
                 updateFinishedEvents().stream()
         ).toList();
         if (!updatedIds.isEmpty()) {
-            Cache eventCache = cacheManager.getCache("events");
+            Cache eventCache = cacheManager.getCache("event");
             if (eventCache != null) {
                 updatedIds.forEach(eventCache::evict);
                 log.info("evict cache for {} events to started", updatedIds.size());

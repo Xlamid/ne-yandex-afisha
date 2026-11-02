@@ -33,7 +33,7 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<GetEventDto> createEvent(@Valid @RequestBody CreateEventDto dto,
-                                                   @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                   @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Create event {}", dto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -42,7 +42,7 @@ public class EventController {
 
     @PostMapping("/search")
     public ResponseEntity<List<GetEventDto>> searchEventsByFilters(@Valid @RequestBody EventSearchRequestDto dto,
-                                                                   @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                                   @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Search events by filters {}", dto);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -50,7 +50,7 @@ public class EventController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<GetEventDto>> getEventsForUser(@RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+    public ResponseEntity<List<GetEventDto>> getEventsForUser(@RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Get events for user");
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -59,7 +59,7 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     public ResponseEntity<GetEventDto> getEventById(@PathVariable Long eventId,
-                                                    @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                    @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Get event by id {}", eventId);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -69,7 +69,7 @@ public class EventController {
     @PutMapping("/{eventId}")
     public ResponseEntity<GetEventDto> updateEventById(@PathVariable Long eventId,
                                                        @Valid @RequestBody UpdateEventDto dto,
-                                                       @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                       @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Update event by id {}", eventId);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -78,7 +78,7 @@ public class EventController {
 
     @DeleteMapping("/{eventId}")
     public ResponseEntity<GetEventDto> deleteEventById(@PathVariable Long eventId,
-                                                       @RequestParam(defaultValue = "DB") CacheMode cacheMode) {
+                                                       @RequestParam(defaultValue = "SPRING") CacheMode cacheMode) {
         log.info("Delete event by id {}", eventId);
         eventServices.get(cacheMode).deleteEventById(eventId);
         return ResponseEntity
