@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Transactional
-public class LocationControllerIntegrationTest extends EventManagerAbstractWithContainerTest {
+public class LocationControllerForDBIntegrationTest extends EventManagerAbstractWithContainerTest {
 
     private static final String BASE_URL = "/locations";
     private static final String ADMIN_LOGIN = "admin1";

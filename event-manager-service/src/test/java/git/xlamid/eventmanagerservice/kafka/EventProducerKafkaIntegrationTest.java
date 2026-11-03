@@ -9,7 +9,7 @@ import git.xlamid.eventmanagerservice.event.dto.UpdateEventDto;
 import git.xlamid.eventmanagerservice.event.entity.EventEntity;
 import git.xlamid.eventmanagerservice.event.model.enums.EventStatus;
 import git.xlamid.eventmanagerservice.event.repository.EventRepository;
-import git.xlamid.eventmanagerservice.event.service.EventService;
+import git.xlamid.eventmanagerservice.event.service.EventScheduler;
 import git.xlamid.eventmanagerservice.location.entity.LocationEntity;
 import git.xlamid.eventmanagerservice.user.entity.UserEntity;
 import git.xlamid.eventmanagerservice.util.DataTestUtil;
@@ -49,7 +49,7 @@ public class EventProducerKafkaIntegrationTest extends EventManagerAbstractWithC
     @Autowired
     private EventCreator eventCreator;
     @Autowired
-    private EventService eventService;
+    private EventScheduler eventScheduler;
     @Autowired
     private EventRepository eventRepository;
 
@@ -255,7 +255,7 @@ public class EventProducerKafkaIntegrationTest extends EventManagerAbstractWithC
         ));
 
         // Act
-        eventService.updateEvents();
+        eventScheduler.updateEvents();
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils
@@ -286,7 +286,7 @@ public class EventProducerKafkaIntegrationTest extends EventManagerAbstractWithC
         ));
 
         // Act
-        eventService.updateEvents();
+        eventScheduler.updateEvents();
 
         // Assert
         ConsumerRecord<String, String> record = KafkaTestUtils

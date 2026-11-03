@@ -3,7 +3,24 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}
+    topic:
+      notification: ${NOTIFICATION_TOPIC}
+  
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
 jwt:
-  secret-key: ${JWT_SECRET_KEY}
-  lifetime: 86_400_000
+  secret-private-key: ${JWT_SECRET_KEY}
+  lifetime: 86_400_000 # 1d
+  
+cache:
+  ttl:
+    min:
+      default: ${DEFAULT_TTL}
+      location: ${LOCATION_TTL}
+      event: ${EVENT_TTL}

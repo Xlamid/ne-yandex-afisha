@@ -8,7 +8,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.kafka.KafkaContainer;
+import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import tools.jackson.databind.ObjectMapper;
@@ -36,9 +38,18 @@ public abstract class EventManagerAbstractWithContainerTest {
             new KafkaContainer(DockerImageName.parse("apache/kafka:3.8.1"))
                     .withReuse(true);
 
+    @SuppressWarnings("resource")
+    public static final GenericContainer<?> REDIS_CONTAINER =
+            new GenericContainer<>(DockerImageName.parse("redis:7"))
+                    .withExposedPorts(6379)
+                    .withReuse(true);
+
     static {
-        POSTGRES_CONTAINER.start();
-        KAFKA_CONTAINER.start();
+        Startables.deepStart(
+                POSTGRES_CONTAINER, 
+                KAFKA_CONTAINER, 
+                REDIS_CONTAINER
+        ).join();
     }
 
     @DynamicPropertySource
@@ -48,6 +59,9 @@ public abstract class EventManagerAbstractWithContainerTest {
         registry.add("spring.datasource.password", POSTGRES_CONTAINER::getPassword);
 
         registry.add("spring.kafka.bootstrap-servers", KAFKA_CONTAINER::getBootstrapServers);
+
+        registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
+        registry.add("spring.data.redis.port", REDIS_CONTAINER::getFirstMappedPort);
     }
 
     protected String getAuthHeader(String login) {

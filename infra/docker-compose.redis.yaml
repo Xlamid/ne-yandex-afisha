@@ -1,11 +1,9 @@
-version: "3.9"
-
 services:
   redis-event-manager:
-    image: redis:7
+    image: redis:7-alpine
     container_name: redis-event-manager
     ports:
-      - "6380:6380"
+      - "6380:6379"
     volumes:
       - redis_event_manager_data:/data
 volumes:

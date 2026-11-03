@@ -28,6 +28,7 @@ public interface EventRepository extends JpaRepository<EventEntity, Long>, JpaSp
             LEFT JOIN FETCH e.location
             LEFT JOIN FETCH e.owner
             WHERE e.owner.id = :userId
+            ORDER BY e.id ASC
             """)
     List<EventEntity> findAllByUserIdWithLocationIdAndUserId(@Param("userId") Long userId);
 

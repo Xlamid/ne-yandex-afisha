@@ -58,6 +58,13 @@ public class EventManagerSecurityConfig {
                                 .requestMatchers("/events/registrations/**")
                                     .hasAnyAuthority("USER")
 
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml",
+                                        "/event-manager-openapi.yaml"
+                                ).permitAll()
                                 .anyRequest().authenticated())
                 .exceptionHandling(exception ->
                         exception

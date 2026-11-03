@@ -7,6 +7,7 @@ import git.xlamid.eventnotificatorservice.notification.mapper.NotificationEventP
 import git.xlamid.eventnotificatorservice.notification.repository.NotificationEventPayloadRepository;
 import git.xlamid.eventnotificatorservice.notification.repository.NotificationRepository;
 import git.xlamid.eventnotificatorservice.notification.util.NotificationChangesConverter;
+import git.xlamid.eventnotificatorservice.notification.util.CacheNotificationCounter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class NotificationProcessingService {
     private final NotificationEventPayloadRepository payloadRepository;
     private final NotificationEventPayloadMapper payloadMapper;
     private final NotificationChangesConverter notificationChangesConverter;
+    private final CacheNotificationCounter notificationCounter;
 
     @Transactional
     public void processEventForSave(NotificationKafkaEvent kafkaEvent) {
@@ -43,5 +45,8 @@ public class NotificationProcessingService {
 
         payloadRepository.save(payloadEntity);
         notificationRepository.saveAll(notificationEntities);
+
+        kafkaEvent.getSubscribers()
+                .forEach(userId -> notificationCounter.incrUnread(userId, 1L));
     }
 }
