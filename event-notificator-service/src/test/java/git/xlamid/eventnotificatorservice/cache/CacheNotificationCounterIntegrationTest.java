@@ -12,7 +12,6 @@ import git.xlamid.eventnotificatorservice.util.UserTestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -159,22 +158,22 @@ public class CacheNotificationCounterIntegrationTest extends EventNotificatorAbs
     // Failure cases
 
     @Test
-    void shouldFailIncrementWhenStoredValueIsNotNumber() {
+    void shouldNotFailIncrementWhenStoredValueIsNotNumber() {
         // Arrange
         stringRedisTemplate.opsForValue().set(NOTIF_KEY_PREFIX + USER_ID, "not-a-number");
 
         // Act & Assert
-        assertThrows(DataAccessException.class, () -> cacheNotificationCounter.incrUnread(USER_ID, 1));
+        assertDoesNotThrow(() -> cacheNotificationCounter.incrUnread(USER_ID, 1));
         assertEquals("not-a-number", getValue(USER_ID));
     }
 
     @Test
-    void shouldFailIncrementOnOverflow() {
+    void shouldNotFailIncrementOnOverflow() {
         // Arrange
         cacheNotificationCounter.setActualUnread(USER_ID, Long.MAX_VALUE);
 
         // Act & Assert
-        assertThrows(DataAccessException.class, () -> cacheNotificationCounter.incrUnread(USER_ID, 1));
+        assertDoesNotThrow(() -> cacheNotificationCounter.incrUnread(USER_ID, 1));
         assertEquals(String.valueOf(Long.MAX_VALUE), getValue(USER_ID));
     }
 

@@ -28,6 +28,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+import static git.xlamid.eventmanagerservice.cache.enums.CacheKey.*;
+
 @EnableCaching
 @Configuration
 public class EventManagerRedisConfig implements CachingConfigurer {
@@ -67,10 +69,10 @@ public class EventManagerRedisConfig implements CachingConfigurer {
                         .fromSerializer(new StringRedisSerializer()));
 
         Map<String, RedisCacheConfiguration> cacheConfigs = Map.of(
-                "location", buildConfig(defaultConfig, locationTtl, objectMapper, GetLocationDto.class),
-                "locations", buildConfig(defaultConfig, locationTtl, objectMapper,
+                LOCATION.getName(), buildConfig(defaultConfig, locationTtl, objectMapper, GetLocationDto.class),
+                LOCATIONS.getName(), buildConfig(defaultConfig, locationTtl, objectMapper,
                         objectMapper.getTypeFactory().constructCollectionType(List.class, GetLocationDto.class)),
-                "event", buildConfig(defaultConfig, eventTtl, objectMapper, GetEventDto.class)
+                EVENT.getName(), buildConfig(defaultConfig, eventTtl, objectMapper, GetEventDto.class)
         );
         
         return RedisCacheManager.builder(factory)
@@ -91,14 +93,11 @@ public class EventManagerRedisConfig implements CachingConfigurer {
         return redisTemplate;
     }
 
-    // TODO как будто можно убрать дублирование
     private <T> RedisCacheConfiguration buildConfig(RedisCacheConfiguration config,
                                                     Duration ttl,
                                                     ObjectMapper objectMapper,
                                                     Class<T> targetClass) {
-        return config.entryTtl(ttl)
-                .serializeValuesWith(SerializationPair.fromSerializer(
-                        new JacksonJsonRedisSerializer<>(objectMapper, targetClass)));
+        return buildConfig(config, ttl, objectMapper, objectMapper.constructType(targetClass));
     }
 
     private RedisCacheConfiguration buildConfig(RedisCacheConfiguration config,
